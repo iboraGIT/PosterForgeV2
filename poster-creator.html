@@ -1,0 +1,2990 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PosterForge — Premium Poster Creator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════ */
+:root {
+  --bg-0: #0a0a0f;
+  --bg-1: #111118;
+  --bg-2: #18181f;
+  --bg-3: #21212b;
+  --bg-4: #2a2a38;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.14);
+  --text-1: #f0f0f5;
+  --text-2: #9898b0;
+  --text-3: #60607a;
+  --accent: #7c6af7;
+  --accent-soft: rgba(124,106,247,0.15);
+  --accent-glow: rgba(124,106,247,0.3);
+  --success: #34d399;
+  --warn: #f59e0b;
+  --danger: #f87171;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --font-ui: 'Inter', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-hero: 'Syne', sans-serif;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+  --transition: 0.15s ease;
+}
+
+[data-theme="light"] {
+  --bg-0: #f5f5f8;
+  --bg-1: #ffffff;
+  --bg-2: #f0f0f4;
+  --bg-3: #e8e8ed;
+  --bg-4: #dddde5;
+  --border: rgba(0,0,0,0.07);
+  --border-hover: rgba(0,0,0,0.14);
+  --text-1: #0f0f18;
+  --text-2: #50507a;
+  --text-3: #9090b0;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; font-size: 14px; }
+body {
+  font-family: var(--font-ui);
+  background: var(--bg-0);
+  color: var(--text-1);
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+button { cursor: pointer; font-family: inherit; border: none; background: none; color: inherit; }
+input, textarea, select { font-family: inherit; color: inherit; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-1); }
+::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 99px; }
+
+/* ═══════════════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════════════ */
+#app {
+  display: grid;
+  grid-template-rows: 44px 1fr;
+  grid-template-columns: 220px 1fr 280px;
+  grid-template-areas:
+    "topbar topbar topbar"
+    "layers canvas panel";
+  height: 100vh;
+  gap: 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════════════ */
+#topbar {
+  grid-area: topbar;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  z-index: 100;
+}
+.topbar-brand {
+  font-family: var(--font-hero);
+  font-size: 16px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+.topbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.topbar-actions { display: flex; gap: 4px; margin-left: auto; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: var(--radius-sm);
+  font-size: 12.5px; font-weight: 500; transition: var(--transition);
+  border: 1px solid transparent;
+}
+.btn-ghost {
+  color: var(--text-2);
+  border-color: var(--border);
+  background: var(--bg-2);
+}
+.btn-ghost:hover { background: var(--bg-3); color: var(--text-1); border-color: var(--border-hover); }
+.btn-accent {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.btn-accent:hover { filter: brightness(1.1); box-shadow: 0 0 20px var(--accent-glow); }
+.btn-sm { padding: 4px 8px; font-size: 11.5px; }
+
+/* Undo/redo */
+.topbar-history { display: flex; gap: 2px; }
+.hist-btn {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-2);
+  color: var(--text-2); font-size: 13px; transition: var(--transition);
+}
+.hist-btn:hover { background: var(--bg-3); color: var(--text-1); }
+.hist-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Template selector in topbar */
+.topbar-template-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg-2);
+  color: var(--text-2); font-size: 12.5px; font-weight: 500;
+  cursor: pointer; transition: var(--transition);
+}
+.topbar-template-btn:hover { background: var(--bg-3); color: var(--text-1); }
+
+/* ═══════════════════════════════════════════════════
+   LAYERS PANEL
+═══════════════════════════════════════════════════ */
+#layers-panel {
+  grid-area: layers;
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--text-3);
+}
+.panel-header-actions { display: flex; gap: 4px; }
+.icon-btn {
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; color: var(--text-3); font-size: 12px; transition: var(--transition);
+}
+.icon-btn:hover { background: var(--bg-3); color: var(--text-1); }
+
+#layers-list {
+  flex: 1; overflow-y: auto; padding: 4px;
+}
+.layer-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition); margin-bottom: 1px;
+  border: 1px solid transparent;
+}
+.layer-item:hover { background: var(--bg-2); }
+.layer-item.active {
+  background: var(--accent-soft);
+  border-color: rgba(124,106,247,0.3);
+}
+.layer-item.locked { opacity: 0.5; }
+.layer-icon {
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; background: var(--bg-3); font-size: 11px; flex-shrink: 0;
+}
+.layer-name {
+  flex: 1; font-size: 12px; font-weight: 500; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.layer-controls { display: flex; gap: 2px; opacity: 0; transition: var(--transition); }
+.layer-item:hover .layer-controls { opacity: 1; }
+.layer-vis-btn, .layer-lock-btn {
+  width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+  border-radius: 3px; color: var(--text-3); font-size: 10px;
+}
+.layer-vis-btn:hover, .layer-lock-btn:hover { background: var(--bg-4); color: var(--text-1); }
+
+/* Layer type badges */
+.layer-type { font-size: 9px; padding: 1px 5px; border-radius: 3px; background: var(--bg-4); color: var(--text-3); }
+
+/* ═══════════════════════════════════════════════════
+   CANVAS AREA
+═══════════════════════════════════════════════════ */
+#canvas-area {
+  grid-area: canvas;
+  background: var(--bg-0);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+#canvas-toolbar {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 4px; z-index: 20;
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 4px; border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+.canvas-tool-btn {
+  padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 500;
+  color: var(--text-2); transition: var(--transition);
+}
+.canvas-tool-btn:hover { background: var(--bg-3); color: var(--text-1); }
+.canvas-tool-btn.active { background: var(--accent-soft); color: var(--accent); }
+
+#canvas-zoom-controls {
+  position: absolute; bottom: 16px; right: 16px;
+  display: flex; align-items: center; gap: 4px; z-index: 20;
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 4px 8px; border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.zoom-btn {
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; color: var(--text-2); font-size: 14px;
+}
+.zoom-btn:hover { background: var(--bg-3); color: var(--text-1); }
+#zoom-label { font-size: 11.5px; color: var(--text-2); min-width: 40px; text-align: center; }
+
+#canvas-viewport {
+  position: relative;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
+
+/* THE POSTER CANVAS */
+#poster-canvas {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 24px 80px rgba(0,0,0,0.8);
+}
+
+/* Drop zone overlay */
+#drop-overlay {
+  position: absolute; inset: 0; z-index: 1000;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(124,106,247,0.1);
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(4px);
+  font-size: 18px; font-weight: 600; color: var(--accent);
+  gap: 10px;
+  pointer-events: none;
+}
+#drop-overlay.active { display: flex; }
+
+/* ═══════════════════════════════════════════════════
+   POSTER INTERNAL LAYOUT
+═══════════════════════════════════════════════════ */
+#poster-canvas {
+  background: #0a0a12;
+}
+.poster-image-zone {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  overflow: hidden;
+}
+.poster-image-zone img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.poster-image-zone .img-overlay {
+  position: absolute; inset: 0;
+}
+.poster-gradient-transition {
+  position: absolute;
+  left: 0; right: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.poster-info-zone {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 28px 28px 24px;
+  z-index: 3;
+}
+
+/* Poster text elements */
+.p-category {
+  font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  opacity: 0.7; margin-bottom: 8px;
+  font-family: var(--font-ui);
+}
+.p-title {
+  font-family: var(--font-hero);
+  font-weight: 800; line-height: 1.05;
+  word-break: break-word;
+  margin-bottom: 6px;
+}
+.p-subtitle {
+  font-family: var(--font-display);
+  font-weight: 400; opacity: 0.75;
+  margin-bottom: 14px;
+}
+.p-tags {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-bottom: 14px;
+}
+.p-tag {
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+  border: 1px solid;
+}
+.p-rating-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.p-stars { color: #f59e0b; letter-spacing: 1px; }
+.p-score { font-size: 22px; font-weight: 700; font-family: var(--font-display); }
+.p-score-max { font-size: 13px; opacity: 0.5; }
+.p-synopsis {
+  font-size: 11px; line-height: 1.65; opacity: 0.7;
+  overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  margin-bottom: 16px;
+  font-family: var(--font-ui);
+}
+.p-meta-grid {
+  display: grid; gap: 6px 16px;
+  margin-bottom: 14px;
+}
+.p-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.p-meta-label { font-size: 8.5px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.45; }
+.p-meta-value { font-size: 11px; font-weight: 500; opacity: 0.85; }
+.p-credits {
+  font-size: 9px; opacity: 0.35; letter-spacing: 0.5px;
+  padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Layer selection handles on canvas */
+.canvas-layer {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: move;
+}
+.canvas-layer.selected {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 1px;
+}
+.canvas-layer.selected::after {
+  content: '';
+  position: absolute; inset: -6px;
+  border: 1.5px dashed rgba(124,106,247,0.4);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.resize-handle {
+  position: absolute;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border: 1.5px solid white;
+  border-radius: 2px;
+  z-index: 10;
+}
+.resize-handle.tl { top: -4px; left: -4px; cursor: nw-resize; }
+.resize-handle.tr { top: -4px; right: -4px; cursor: ne-resize; }
+.resize-handle.bl { bottom: -4px; left: -4px; cursor: sw-resize; }
+.resize-handle.br { bottom: -4px; right: -4px; cursor: se-resize; }
+.resize-handle.tc { top: -4px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.resize-handle.bc { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.resize-handle.ml { left: -4px; top: 50%; transform: translateY(-50%); cursor: w-resize; }
+.resize-handle.mr { right: -4px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
+
+/* ═══════════════════════════════════════════════════
+   RIGHT PANEL
+═══════════════════════════════════════════════════ */
+#right-panel {
+  grid-area: panel;
+  background: var(--bg-1);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.panel-tabs {
+  display: flex; border-bottom: 1px solid var(--border); padding: 0 4px;
+}
+.panel-tab {
+  padding: 10px 12px; font-size: 12px; font-weight: 500;
+  color: var(--text-3); border-bottom: 2px solid transparent;
+  transition: var(--transition); cursor: pointer;
+}
+.panel-tab:hover { color: var(--text-2); }
+.panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.panel-body {
+  flex: 1; overflow-y: auto; padding: 12px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* Form controls */
+.form-section {
+  background: var(--bg-2); border-radius: var(--radius-md);
+  border: 1px solid var(--border); overflow: hidden;
+}
+.form-section-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--text-3); padding: 10px 12px 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.form-section-toggle { color: var(--text-3); font-size: 10px; cursor: pointer; }
+.form-section-body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.form-section-body.collapsed { display: none; }
+
+.form-row { display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-size: 11px; color: var(--text-2); font-weight: 500; }
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.form-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+
+.input {
+  width: 100%; padding: 6px 9px;
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-1);
+  font-size: 12.5px; font-family: inherit;
+  transition: var(--transition); outline: none;
+}
+.input:focus { border-color: var(--accent); background: var(--bg-0); }
+.input::placeholder { color: var(--text-3); }
+textarea.input { resize: vertical; min-height: 70px; line-height: 1.5; }
+
+.range-row { display: flex; align-items: center; gap: 8px; }
+.range-input {
+  flex: 1; -webkit-appearance: none; height: 3px;
+  background: var(--bg-4); border-radius: 99px; outline: none;
+}
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--accent);
+  border: 1.5px solid white; cursor: pointer;
+}
+.range-val { font-size: 11px; color: var(--text-2); min-width: 28px; text-align: right; }
+
+.color-row { display: flex; align-items: center; gap: 6px; }
+.color-swatch {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); cursor: pointer; flex-shrink: 0;
+  overflow: hidden; position: relative;
+}
+.color-swatch input[type="color"] {
+  position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px);
+  opacity: 0; cursor: pointer;
+}
+
+.checkbox-row { display: flex; align-items: center; gap: 8px; }
+.checkbox { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.checkbox-label { font-size: 12px; color: var(--text-2); }
+
+.select-input {
+  width: 100%; padding: 6px 9px;
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-1);
+  font-size: 12.5px; font-family: inherit;
+  transition: var(--transition); outline: none; cursor: pointer;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2360607a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  padding-right: 26px;
+}
+.select-input:focus { border-color: var(--accent); }
+
+/* Tags editor */
+.tags-editor { display: flex; flex-direction: column; gap: 6px; }
+.tags-list { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag-pill-edit {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 6px 3px 10px; border-radius: 99px;
+  background: var(--accent-soft); border: 1px solid rgba(124,106,247,0.3);
+  font-size: 11px; font-weight: 500; color: var(--accent);
+}
+.tag-remove { width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 10px; }
+.tag-remove:hover { background: rgba(124,106,247,0.3); }
+.tag-add-row { display: flex; gap: 4px; }
+
+/* Meta fields */
+.meta-fields { display: flex; flex-direction: column; gap: 6px; }
+.meta-row { display: flex; gap: 6px; align-items: center; }
+.meta-row .input { font-size: 11.5px; padding: 5px 7px; }
+.meta-remove { color: var(--text-3); font-size: 12px; padding: 2px; }
+.meta-remove:hover { color: var(--danger); }
+
+/* Stars editor */
+.stars-editor { display: flex; align-items: center; gap: 4px; }
+.star-btn { font-size: 18px; cursor: pointer; transition: var(--transition); }
+.star-btn.filled { color: #f59e0b; }
+.star-btn.empty { color: var(--bg-4); }
+.star-btn:hover { transform: scale(1.2); }
+
+/* Image adjust */
+.image-adj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* Export panel */
+.export-options { display: flex; flex-direction: column; gap: 8px; }
+.export-format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+.format-btn {
+  padding: 7px; text-align: center; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg-3);
+  font-size: 12px; font-weight: 600; color: var(--text-2); cursor: pointer;
+  transition: var(--transition);
+}
+.format-btn.active, .format-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.resolution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.res-btn {
+  padding: 6px; text-align: center; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg-3);
+  font-size: 11px; font-weight: 500; color: var(--text-2); cursor: pointer;
+  transition: var(--transition);
+}
+.res-btn.active, .res-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.export-progress {
+  height: 3px; background: var(--bg-3); border-radius: 99px; overflow: hidden;
+}
+.export-progress-fill {
+  height: 100%; background: var(--accent); width: 0%;
+  transition: width 0.3s ease; border-radius: 99px;
+}
+
+/* ═══════════════════════════════════════════════════
+   TEMPLATE PICKER MODAL
+═══════════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 24px;
+  width: min(820px, 95vw); max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.modal-title {
+  font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.modal-subtitle { color: var(--text-2); font-size: 13px; margin-bottom: 20px; }
+.templates-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px;
+}
+.template-card {
+  border-radius: var(--radius-md); border: 1px solid var(--border);
+  overflow: hidden; cursor: pointer; transition: var(--transition);
+  background: var(--bg-2);
+}
+.template-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,106,247,0.2); }
+.template-preview {
+  height: 100px; display: flex; align-items: flex-end;
+  padding: 10px; position: relative; overflow: hidden;
+}
+.template-name {
+  font-size: 12px; font-weight: 600; padding: 8px 10px;
+  background: var(--bg-2);
+}
+.template-badge {
+  position: absolute; top: 6px; right: 6px; padding: 2px 7px;
+  border-radius: 99px; font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  background: rgba(124,106,247,0.3); color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+═══════════════════════════════════════════════════ */
+#toast-container {
+  position: fixed; top: 60px; right: 16px; z-index: 999;
+  display: flex; flex-direction: column; gap: 6px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 10px 14px; border-radius: var(--radius-md);
+  font-size: 12.5px; font-weight: 500;
+  box-shadow: var(--shadow-md);
+  animation: toastIn 0.25s ease, toastOut 0.25s ease 2.5s forwards;
+  display: flex; align-items: center; gap: 8px;
+  pointer-events: all;
+}
+.toast.success { border-left: 3px solid var(--success); }
+.toast.warn { border-left: 3px solid var(--warn); }
+.toast.error { border-left: 3px solid var(--danger); }
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
+
+/* ═══════════════════════════════════════════════════
+   STATUS BAR
+═══════════════════════════════════════════════════ */
+#status-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  height: 24px; background: var(--bg-1); border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px; padding: 0 12px;
+  font-size: 11px; color: var(--text-3);
+}
+.status-item { display: flex; align-items: center; gap: 4px; }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--success); }
+
+/* ═══════════════════════════════════════════════════
+   MISC UTILITIES
+═══════════════════════════════════════════════════ */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-4 { gap: 4px; }
+.divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* Image upload placeholder */
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: var(--radius-md);
+  padding: 24px 16px; text-align: center; cursor: pointer;
+  transition: var(--transition); display: flex; flex-direction: column;
+  align-items: center; gap: 8px; color: var(--text-3);
+}
+.upload-zone:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.upload-zone-icon { font-size: 24px; }
+.upload-zone-text { font-size: 12px; font-weight: 500; }
+.upload-zone-hint { font-size: 11px; opacity: 0.6; }
+
+/* Compact number display in panels */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.stat-card {
+  background: var(--bg-3); border-radius: var(--radius-sm);
+  padding: 8px 10px; border: 1px solid var(--border);
+}
+.stat-val { font-size: 16px; font-weight: 700; font-family: var(--font-display); color: var(--accent); }
+.stat-label { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+
+/* Font selector */
+.font-preview { font-size: 15px; margin-top: 2px; color: var(--text-2); }
+
+/* ═══════════════════════════════════════════════════
+   KEYBOARD SHORTCUT HINT
+═══════════════════════════════════════════════════ */
+.kbd {
+  display: inline-flex; align-items: center; padding: 1px 5px;
+  background: var(--bg-4); border: 1px solid var(--border);
+  border-radius: 4px; font-size: 10px; color: var(--text-3);
+  font-family: monospace;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- TOP BAR -->
+  <header id="topbar">
+    <span class="topbar-brand">PosterForge</span>
+    <div class="topbar-sep"></div>
+
+    <!-- Template button -->
+    <button class="topbar-template-btn" id="open-templates-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Templates
+    </button>
+
+    <div class="topbar-sep"></div>
+
+    <!-- Canvas size preset -->
+    <select class="select-input" id="canvas-size-select" style="width:140px; font-size:12px; padding:4px 24px 4px 8px;">
+      <option value="900x1200">Portrait 3:4</option>
+      <option value="1200x1600">Portrait 3:4 Large</option>
+      <option value="800x1200">Portrait 2:3</option>
+      <option value="1920x1080">Landscape 16:9</option>
+      <option value="1080x1080">Square 1:1</option>
+      <option value="1080x1920">Story 9:16</option>
+    </select>
+
+    <div class="topbar-sep"></div>
+
+    <!-- History -->
+    <div class="topbar-history">
+      <button class="hist-btn" id="undo-btn" title="Undo (Ctrl+Z)" disabled>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,14 4,9 9,4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+      </button>
+      <button class="hist-btn" id="redo-btn" title="Redo (Ctrl+Y)" disabled>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,14 20,9 15,4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
+      </button>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" id="save-json-btn">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+        Save
+      </button>
+      <button class="btn btn-ghost btn-sm" id="load-json-btn">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Load
+      </button>
+      <input type="file" id="load-json-input" accept=".json" style="display:none">
+
+      <div class="topbar-sep"></div>
+
+      <!-- Theme toggle -->
+      <button class="btn btn-ghost btn-sm" id="theme-toggle-btn" title="Toggle theme">
+        <svg id="theme-icon-dark" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+        <svg id="theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+
+      <button class="btn btn-accent btn-sm" id="export-btn">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export PNG
+      </button>
+    </div>
+  </header>
+
+  <!-- LAYERS PANEL -->
+  <aside id="layers-panel">
+    <div class="panel-header">
+      <span>Layers</span>
+      <div class="panel-header-actions">
+        <button class="icon-btn" id="add-text-layer-btn" title="Add text layer">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3H7a2 2 0 0 0-2 2v14l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>
+        </button>
+        <button class="icon-btn" title="Duplicate selected" id="dup-layer-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="icon-btn" title="Delete selected" id="del-layer-btn" style="color:var(--text-3)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="layers-list"></div>
+
+    <!-- Quick layer add buttons -->
+    <div style="padding:8px; border-top:1px solid var(--border); display:flex; flex-wrap:wrap; gap:4px;">
+      <button class="btn btn-ghost btn-sm" style="flex:1; min-width:80px;" onclick="PF.addLayer('title')">+ Title</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1; min-width:80px;" onclick="PF.addLayer('subtitle')">+ Subtitle</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1; min-width:80px;" onclick="PF.addLayer('synopsis')">+ Synopsis</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1; min-width:80px;" onclick="PF.addLayer('tags')">+ Tags</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1; min-width:80px;" onclick="PF.addLayer('rating')">+ Rating</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1; min-width:80px;" onclick="PF.addLayer('meta')">+ Info</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1; min-width:80px;" onclick="PF.addLayer('credits')">+ Credits</button>
+    </div>
+  </aside>
+
+  <!-- CANVAS -->
+  <main id="canvas-area">
+    <!-- Canvas toolbar -->
+    <div id="canvas-toolbar">
+      <button class="canvas-tool-btn active" data-tool="select" title="Select (V)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-7 1-3 7z"/></svg>
+        Select
+      </button>
+      <button class="canvas-tool-btn" data-tool="hand" title="Pan (H)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+        Pan
+      </button>
+    </div>
+
+    <!-- Main poster viewport -->
+    <div id="canvas-viewport">
+      <div id="poster-canvas">
+        <!-- Poster layers rendered here dynamically -->
+        <div id="drop-overlay">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Drop image here
+        </div>
+      </div>
+    </div>
+
+    <!-- Zoom controls -->
+    <div id="canvas-zoom-controls">
+      <button class="zoom-btn" id="zoom-out-btn">−</button>
+      <span id="zoom-label">100%</span>
+      <button class="zoom-btn" id="zoom-in-btn">+</button>
+      <button class="zoom-btn" id="zoom-fit-btn" title="Fit to screen" style="font-size:10px; padding:0 4px;">Fit</button>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside id="right-panel">
+    <div class="panel-tabs">
+      <button class="panel-tab active" data-panel="design">Design</button>
+      <button class="panel-tab" data-panel="image">Image</button>
+      <button class="panel-tab" data-panel="content">Content</button>
+      <button class="panel-tab" data-panel="export">Export</button>
+    </div>
+
+    <!-- DESIGN TAB -->
+    <div class="panel-body" id="panel-design">
+
+      <!-- Background -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Background
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <div class="form-2col">
+              <div>
+                <div class="form-label">Color 1</div>
+                <div class="color-row">
+                  <div class="color-swatch" style="background:#0a0a12">
+                    <input type="color" id="bg-color1" value="#0a0a12" oninput="PF.setBgColor1(this.value)">
+                  </div>
+                  <input class="input" id="bg-color1-hex" value="#0a0a12" onchange="PF.setBgColor1(this.value)" style="font-size:11px; padding:5px 7px">
+                </div>
+              </div>
+              <div>
+                <div class="form-label">Color 2</div>
+                <div class="color-row">
+                  <div class="color-swatch" style="background:#1a0a2e">
+                    <input type="color" id="bg-color2" value="#1a0a2e" oninput="PF.setBgColor2(this.value)">
+                  </div>
+                  <input class="input" id="bg-color2-hex" value="#1a0a2e" onchange="PF.setBgColor2(this.value)" style="font-size:11px; padding:5px 7px">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Gradient Direction</div>
+            <select class="select-input" id="bg-gradient-dir" onchange="PF.setBgGradient()">
+              <option value="to bottom">Top → Bottom</option>
+              <option value="to bottom right">Diagonal</option>
+              <option value="135deg">135°</option>
+              <option value="to right">Left → Right</option>
+              <option value="radial">Radial</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Extract from Image</div>
+            <button class="btn btn-ghost btn-sm" id="extract-palette-btn" onclick="PF.extractPalette()">
+              🎨 Auto Extract Palette
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gradient Transition -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Image Transition
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <div class="form-label">Transition Start (%)</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="transition-start" min="30" max="100" value="55" oninput="PF.setTransition()">
+              <span class="range-val" id="transition-start-val">55%</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Feather Softness</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="transition-feather" min="0" max="100" value="60" oninput="PF.setTransition()">
+              <span class="range-val" id="transition-feather-val">60%</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Image Height (%)</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="image-height" min="20" max="90" value="65" oninput="PF.setImageHeight(this.value)">
+              <span class="range-val" id="image-height-val">65%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Glow Effects -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Global Glow
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <div class="form-label">Accent Color</div>
+            <div class="color-row">
+              <div class="color-swatch" style="background:#7c6af7" id="glow-swatch">
+                <input type="color" id="glow-color" value="#7c6af7" oninput="PF.setGlowColor(this.value)">
+              </div>
+              <input class="input" id="glow-hex" value="#7c6af7" onchange="PF.setGlowColor(this.value)" style="font-size:11px; padding:5px 7px">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Intensity</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="glow-intensity" min="0" max="100" value="40" oninput="PF.setGlowIntensity(this.value)">
+              <span class="range-val" id="glow-intensity-val">40%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Layer Properties -->
+      <div class="form-section" id="layer-props-section" style="display:none;">
+        <div class="form-section-title">
+          <span id="layer-props-title">Layer Properties</span>
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body" id="layer-props-body">
+          <!-- Filled dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- IMAGE TAB -->
+    <div class="panel-body" id="panel-image" style="display:none;">
+      <div class="form-section">
+        <div class="form-section-title">Upload Image</div>
+        <div class="form-section-body">
+          <div class="upload-zone" id="upload-zone-btn">
+            <div class="upload-zone-icon">🖼️</div>
+            <div class="upload-zone-text">Click or drag an image</div>
+            <div class="upload-zone-hint">PNG, JPG, WEBP — any size</div>
+          </div>
+          <input type="file" id="image-upload" accept="image/*" style="display:none">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Position & Transform</div>
+        <div class="form-section-body">
+          <div class="form-2col">
+            <div class="form-row">
+              <div class="form-label">Offset X</div>
+              <div class="range-row">
+                <input type="range" class="range-input" id="img-offset-x" min="-200" max="200" value="0" oninput="PF.setImageTransform()">
+                <span class="range-val" id="img-offset-x-val">0</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-label">Offset Y</div>
+              <div class="range-row">
+                <input type="range" class="range-input" id="img-offset-y" min="-200" max="200" value="0" oninput="PF.setImageTransform()">
+                <span class="range-val" id="img-offset-y-val">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Zoom</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="img-zoom" min="50" max="300" value="100" oninput="PF.setImageTransform()">
+              <span class="range-val" id="img-zoom-val">100%</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Rotation</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="img-rotation" min="-180" max="180" value="0" oninput="PF.setImageTransform()">
+              <span class="range-val" id="img-rotation-val">0°</span>
+            </div>
+          </div>
+          <div class="form-2col">
+            <button class="btn btn-ghost btn-sm" onclick="PF.flipImageH()">↔ Flip H</button>
+            <button class="btn btn-ghost btn-sm" onclick="PF.flipImageV()">↕ Flip V</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">
+          Adjustments
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-row"><div class="form-label">Brightness</div>
+            <div class="range-row"><input type="range" class="range-input" id="adj-brightness" min="-100" max="100" value="0" oninput="PF.updateImageFilter()"><span class="range-val" id="adj-brightness-val">0</span></div>
+          </div>
+          <div class="form-row"><div class="form-label">Contrast</div>
+            <div class="range-row"><input type="range" class="range-input" id="adj-contrast" min="-100" max="100" value="0" oninput="PF.updateImageFilter()"><span class="range-val" id="adj-contrast-val">0</span></div>
+          </div>
+          <div class="form-row"><div class="form-label">Saturation</div>
+            <div class="range-row"><input type="range" class="range-input" id="adj-saturation" min="-100" max="100" value="0" oninput="PF.updateImageFilter()"><span class="range-val" id="adj-saturation-val">0</span></div>
+          </div>
+          <div class="form-row"><div class="form-label">Hue</div>
+            <div class="range-row"><input type="range" class="range-input" id="adj-hue" min="-180" max="180" value="0" oninput="PF.updateImageFilter()"><span class="range-val" id="adj-hue-val">0°</span></div>
+          </div>
+          <div class="form-row"><div class="form-label">Blur</div>
+            <div class="range-row"><input type="range" class="range-input" id="adj-blur" min="0" max="20" value="0" oninput="PF.updateImageFilter()"><span class="range-val" id="adj-blur-val">0</span></div>
+          </div>
+          <div class="form-row"><div class="form-label">Sepia</div>
+            <div class="range-row"><input type="range" class="range-input" id="adj-sepia" min="0" max="100" value="0" oninput="PF.updateImageFilter()"><span class="range-val" id="adj-sepia-val">0%</span></div>
+          </div>
+          <div class="form-row"><div class="form-label">Opacity</div>
+            <div class="range-row"><input type="range" class="range-input" id="adj-opacity" min="0" max="100" value="100" oninput="PF.updateImageFilter()"><span class="range-val" id="adj-opacity-val">100%</span></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="width:100%" onclick="PF.resetImageAdjustments()">Reset All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT TAB -->
+    <div class="panel-body" id="panel-content" style="display:none;">
+
+      <!-- Category / Media Type -->
+      <div class="form-section">
+        <div class="form-section-title">Media Type</div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <select class="select-input" id="media-type" onchange="PF.setMediaType(this.value)">
+              <option value="anime">Anime</option>
+              <option value="manga">Manga</option>
+              <option value="roblox">Roblox</option>
+              <option value="game">Video Game</option>
+              <option value="film">Film</option>
+              <option value="series">Series</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Title
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <textarea class="input" id="c-title" placeholder="Poster title…" rows="2" oninput="PF.updateContent()">One Piece</textarea>
+          </div>
+          <div class="form-2col">
+            <div class="form-row">
+              <div class="form-label">Size</div>
+              <div class="range-row">
+                <input type="range" class="range-input" id="title-size" min="16" max="120" value="52" oninput="PF.updateContent()">
+                <span class="range-val" id="title-size-val">52</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-label">Color</div>
+              <div class="color-row">
+                <div class="color-swatch" style="background:#ffffff">
+                  <input type="color" id="title-color" value="#ffffff" oninput="PF.updateContent()">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Font</div>
+            <select class="select-input" id="title-font" onchange="PF.updateContent()">
+              <option value="'Syne', sans-serif">Syne (Display)</option>
+              <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+              <option value="'Inter', sans-serif">Inter</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="'Courier New', monospace">Courier New</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Letter Spacing</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="title-spacing" min="-5" max="20" value="-1" oninput="PF.updateContent()">
+              <span class="range-val" id="title-spacing-val">-1</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Text Shadow</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="title-shadow" min="0" max="40" value="8" oninput="PF.updateContent()">
+              <span class="range-val" id="title-shadow-val">8</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Glow</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="title-glow" min="0" max="30" value="6" oninput="PF.updateContent()">
+              <span class="range-val" id="title-glow-val">6</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtitle -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Subtitle
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <input class="input" id="c-subtitle" placeholder="Subtitle, year, studio…" value="2024 · Studio Toei · Action" oninput="PF.updateContent()">
+          </div>
+          <div class="form-2col">
+            <div class="form-row">
+              <div class="form-label">Size</div>
+              <div class="range-row">
+                <input type="range" class="range-input" id="subtitle-size" min="8" max="32" value="13" oninput="PF.updateContent()">
+                <span class="range-val" id="subtitle-size-val">13</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-label">Color</div>
+              <div class="color-row">
+                <div class="color-swatch" style="background:#c084fc">
+                  <input type="color" id="subtitle-color" value="#c084fc" oninput="PF.updateContent()">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Tags
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="tags-editor">
+            <div class="tags-list" id="tags-edit-list"></div>
+            <div class="tag-add-row">
+              <input class="input" id="tag-input" placeholder="Add a tag…" style="font-size:11.5px">
+              <button class="btn btn-ghost btn-sm" onclick="PF.addTag()">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rating -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Rating
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="stars-editor" id="stars-editor"></div>
+          <div class="form-2col" style="margin-top:8px;">
+            <div class="form-row">
+              <div class="form-label">Score</div>
+              <input class="input" id="c-score" value="9.2" oninput="PF.updateContent()" style="font-size:12px">
+            </div>
+            <div class="form-row">
+              <div class="form-label">Max</div>
+              <input class="input" id="c-score-max" value="10" oninput="PF.updateContent()" style="font-size:12px">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Synopsis -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Synopsis
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <textarea class="input" id="c-synopsis" rows="4" placeholder="Enter synopsis…" oninput="PF.updateContent()">A young boy, Monkey D. Luffy, sets out on a voyage to find the legendary treasure called the One Piece and become the Pirate King.</textarea>
+          </div>
+          <div class="form-2col">
+            <div class="form-row">
+              <div class="form-label">Lines shown</div>
+              <input type="number" class="input" id="synopsis-lines" value="3" min="1" max="10" oninput="PF.updateContent()" style="font-size:12px">
+            </div>
+            <div class="form-row">
+              <div class="form-label">Color</div>
+              <div class="color-row">
+                <div class="color-swatch" style="background:#e0e0e8">
+                  <input type="color" id="synopsis-color" value="#e0e0e8" oninput="PF.updateContent()">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meta Fields -->
+      <div class="form-section">
+        <div class="form-section-title">
+          Info Fields
+          <span class="form-section-toggle" onclick="toggleSection(this)">▾</span>
+        </div>
+        <div class="form-section-body">
+          <div class="meta-fields" id="meta-fields-list"></div>
+          <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:6px;" onclick="PF.addMetaField()">+ Add Field</button>
+          <div style="margin-top:6px;">
+            <div class="form-label">Grid Columns</div>
+            <select class="select-input" id="meta-grid-cols" onchange="PF.updateContent()">
+              <option value="2">2 columns</option>
+              <option value="3">3 columns</option>
+              <option value="4" selected>4 columns</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Credits -->
+      <div class="form-section">
+        <div class="form-section-title">Credits</div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <textarea class="input" id="c-credits" rows="2" placeholder="Credits / signature…" oninput="PF.updateContent()">Created with PosterForge</textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- EXPORT TAB -->
+    <div class="panel-body" id="panel-export" style="display:none;">
+      <div class="form-section">
+        <div class="form-section-title">Format</div>
+        <div class="form-section-body">
+          <div class="export-format-grid">
+            <button class="format-btn active" data-fmt="png">PNG</button>
+            <button class="format-btn" data-fmt="jpg">JPG</button>
+            <button class="format-btn" data-fmt="webp">WEBP</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Resolution</div>
+        <div class="form-section-body">
+          <div class="resolution-grid">
+            <button class="res-btn" data-res="1">HD (1×)</button>
+            <button class="res-btn active" data-res="2">Full HD (2×)</button>
+            <button class="res-btn" data-res="3">2K (3×)</button>
+            <button class="res-btn" data-res="4">4K (4×)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Quality</div>
+        <div class="form-section-body">
+          <div class="form-row">
+            <div class="form-label">JPEG/WEBP Quality</div>
+            <div class="range-row">
+              <input type="range" class="range-input" id="export-quality" min="60" max="100" value="95">
+              <span class="range-val" id="export-quality-val">95%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Export</div>
+        <div class="form-section-body">
+          <div class="export-progress" id="export-progress" style="display:none;">
+            <div class="export-progress-fill" id="export-progress-fill"></div>
+          </div>
+          <button class="btn btn-accent" style="width:100%; padding:10px; font-size:13px;" id="export-btn-panel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Poster
+          </button>
+          <div style="margin-top:8px; font-size:11px; color:var(--text-3); text-align:center;">
+            Pixel-perfect export matching the preview
+          </div>
+        </div>
+      </div>
+
+      <!-- Export stats -->
+      <div class="stat-grid" id="export-stats">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-w">900</div>
+          <div class="stat-label">Width px</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-h">1200</div>
+          <div class="stat-label">Height px</div>
+        </div>
+      </div>
+
+      <!-- Save/Load JSON -->
+      <div class="form-section">
+        <div class="form-section-title">Project File</div>
+        <div class="form-section-body">
+          <div class="form-2col">
+            <button class="btn btn-ghost btn-sm" onclick="PF.saveJSON()">💾 Save .json</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('load-json-input').click()">📂 Load .json</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- TEMPLATE PICKER MODAL -->
+<div class="modal-overlay" id="templates-modal">
+  <div class="modal">
+    <div class="modal-title">Choose a Template</div>
+    <div class="modal-subtitle">Start with a premium preset and customize it to your liking</div>
+    <div class="templates-grid" id="templates-grid"></div>
+    <div style="margin-top:16px; text-align:right;">
+      <button class="btn btn-ghost" onclick="closeModal('templates-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- STATUS BAR -->
+<div id="status-bar">
+  <div class="status-item">
+    <div class="status-dot"></div>
+    <span>PosterForge v1.0</span>
+  </div>
+  <div class="status-item" id="status-size">900 × 1200</div>
+  <div class="status-item" id="status-layers">0 layers</div>
+  <div class="status-item" style="margin-left:auto;">
+    <span class="kbd">Ctrl+Z</span> Undo &nbsp;
+    <span class="kbd">Ctrl+S</span> Save &nbsp;
+    <span class="kbd">Ctrl+Shift+E</span> Export
+  </div>
+</div>
+
+<!-- Hidden canvas for export (html2canvas replacement - pure canvas) -->
+<canvas id="export-canvas" style="display:none;"></canvas>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   POSTERFORGE — CORE ENGINE
+   Pure JavaScript, no frameworks.
+   Pixel-perfect canvas export via native Canvas API.
+═══════════════════════════════════════════════════════════════ */
+
+const PF = (() => {
+  'use strict';
+
+  // ─── STATE ────────────────────────────────────────────────────
+  let state = {
+    canvasW: 900,
+    canvasH: 1200,
+    bgColor1: '#0a0a12',
+    bgColor2: '#1a0a2e',
+    bgGradientDir: 'to bottom',
+    glowColor: '#7c6af7',
+    glowIntensity: 40,
+    imageHeight: 65,
+    transitionStart: 55,
+    transitionFeather: 60,
+    imageSrc: null,
+    imageFlipH: false,
+    imageFlipV: false,
+    imgOffsetX: 0,
+    imgOffsetY: 0,
+    imgZoom: 100,
+    imgRotation: 0,
+    imgBrightness: 0,
+    imgContrast: 0,
+    imgSaturation: 0,
+    imgHue: 0,
+    imgBlur: 0,
+    imgSepia: 0,
+    imgOpacity: 100,
+    mediaType: 'anime',
+    title: 'One Piece',
+    titleSize: 52,
+    titleColor: '#ffffff',
+    titleFont: "'Syne', sans-serif",
+    titleSpacing: -1,
+    titleShadow: 8,
+    titleGlow: 6,
+    subtitle: '2024 · Studio Toei · Action',
+    subtitleSize: 13,
+    subtitleColor: '#c084fc',
+    tags: ['Action', 'Adventure', 'Fantasy', 'Pirate'],
+    rating: 4.6,
+    score: '9.2',
+    scoreMax: '10',
+    synopsis: 'A young boy, Monkey D. Luffy, sets out on a voyage to find the legendary treasure called the One Piece and become the Pirate King.',
+    synopsisLines: 3,
+    synopsisColor: '#e0e0e8',
+    metaFields: [
+      { label: 'Studio', value: 'Toei Animation' },
+      { label: 'Episodes', value: '1087+' },
+      { label: 'Status', value: 'Ongoing' },
+      { label: 'Year', value: '1999–Present' },
+      { label: 'MAL Score', value: '8.72' },
+      { label: 'Rank', value: '#1' },
+    ],
+    metaGridCols: 4,
+    credits: 'Created with PosterForge',
+    exportFmt: 'png',
+    exportRes: 2,
+    exportQuality: 95,
+    layers: [],
+    selectedLayerId: null,
+  };
+
+  let history = [];
+  let historyIndex = -1;
+  const MAX_HISTORY = 50;
+  let currentTool = 'select';
+  let zoom = 1;
+  let dragData = null;
+  let autoSaveTimer = null;
+  let imageEl = null;
+
+  // ─── INIT ────────────────────────────────────────────────────
+  function init() {
+    setupEventListeners();
+    setupDragDrop();
+    setupKeyboardShortcuts();
+    renderLayers();
+    renderPoster();
+    renderTemplatesGrid();
+    initStarsEditor();
+    initMetaFields();
+    initTagsEditor();
+    updateCanvasSize();
+    fitToScreen();
+    pushHistory();
+    // Auto-save every 30s
+    setInterval(autoSave, 30000);
+  }
+
+  // ─── EVENT LISTENERS ─────────────────────────────────────────
+  function setupEventListeners() {
+    // Panel tabs
+    document.querySelectorAll('.panel-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('[id^="panel-"]').forEach(p => p.style.display = 'none');
+        document.getElementById('panel-' + tab.dataset.panel).style.display = 'flex';
+      });
+    });
+
+    // Canvas tools
+    document.querySelectorAll('.canvas-tool-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.canvas-tool-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTool = btn.dataset.tool;
+        document.getElementById('poster-canvas').style.cursor = currentTool === 'hand' ? 'grab' : 'default';
+      });
+    });
+
+    // Canvas size
+    document.getElementById('canvas-size-select').addEventListener('change', e => {
+      const [w, h] = e.target.value.split('x').map(Number);
+      state.canvasW = w;
+      state.canvasH = h;
+      updateCanvasSize();
+      fitToScreen();
+      renderPoster();
+    });
+
+    // Zoom
+    document.getElementById('zoom-in-btn').addEventListener('click', () => setZoom(zoom * 1.25));
+    document.getElementById('zoom-out-btn').addEventListener('click', () => setZoom(zoom * 0.8));
+    document.getElementById('zoom-fit-btn').addEventListener('click', fitToScreen);
+
+    // Wheel zoom
+    document.getElementById('canvas-area').addEventListener('wheel', e => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        setZoom(zoom * delta);
+      }
+    }, { passive: false });
+
+    // Image upload
+    document.getElementById('upload-zone-btn').addEventListener('click', () => document.getElementById('image-upload').click());
+    document.getElementById('image-upload').addEventListener('change', e => {
+      if (e.target.files[0]) loadImage(e.target.files[0]);
+    });
+
+    // Templates modal
+    document.getElementById('open-templates-btn').addEventListener('click', () => openModal('templates-modal'));
+
+    // Undo/redo
+    document.getElementById('undo-btn').addEventListener('click', undo);
+    document.getElementById('redo-btn').addEventListener('click', redo);
+
+    // Save/Load
+    document.getElementById('save-json-btn').addEventListener('click', saveJSON);
+    document.getElementById('load-json-btn').addEventListener('click', () => document.getElementById('load-json-input').click());
+    document.getElementById('load-json-input').addEventListener('change', e => {
+      if (e.target.files[0]) loadJSON(e.target.files[0]);
+    });
+
+    // Export buttons
+    document.getElementById('export-btn').addEventListener('click', exportPoster);
+    document.getElementById('export-btn-panel').addEventListener('click', exportPoster);
+
+    // Format / resolution buttons
+    document.querySelectorAll('.format-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.exportFmt = btn.dataset.fmt;
+      });
+    });
+    document.querySelectorAll('.res-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.res-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.exportRes = parseInt(btn.dataset.res);
+        updateExportStats();
+      });
+    });
+
+    // Export quality
+    document.getElementById('export-quality').addEventListener('input', e => {
+      document.getElementById('export-quality-val').textContent = e.target.value + '%';
+      state.exportQuality = parseInt(e.target.value);
+    });
+
+    // Layer actions
+    document.getElementById('dup-layer-btn').addEventListener('click', duplicateSelectedLayer);
+    document.getElementById('del-layer-btn').addEventListener('click', deleteSelectedLayer);
+
+    // Tag input enter
+    document.getElementById('tag-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addTag();
+    });
+
+    // Theme toggle
+    document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+
+    // Glow controls sync
+    ['glow-color', 'glow-intensity', 'bg-color1', 'bg-color2', 'bg-gradient-dir'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', () => renderPoster());
+    });
+
+    updateExportStats();
+  }
+
+  // ─── DRAG & DROP (image) ─────────────────────────────────────
+  function setupDragDrop() {
+    const area = document.getElementById('canvas-area');
+    const overlay = document.getElementById('drop-overlay');
+
+    area.addEventListener('dragover', e => {
+      e.preventDefault();
+      overlay.classList.add('active');
+    });
+    area.addEventListener('dragleave', () => overlay.classList.remove('active'));
+    area.addEventListener('drop', e => {
+      e.preventDefault();
+      overlay.classList.remove('active');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) loadImage(file);
+    });
+  }
+
+  // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
+  function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', e => {
+      const isMac = navigator.platform.includes('Mac');
+      const ctrl = isMac ? e.metaKey : e.ctrlKey;
+
+      if (ctrl && !e.shiftKey && e.key === 'z') { e.preventDefault(); undo(); }
+      if (ctrl && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); redo(); }
+      if (ctrl && !e.shiftKey && e.key === 's') { e.preventDefault(); saveJSON(); toast('Project saved!', 'success'); }
+      if (ctrl && e.shiftKey && e.key === 'E') { e.preventDefault(); exportPoster(); }
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const active = document.activeElement;
+        if (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') deleteSelectedLayer();
+      }
+      if (e.key === 'v' || e.key === 'V') { if (!isEditingText()) setTool('select'); }
+      if (e.key === 'h' || e.key === 'H') { if (!isEditingText()) setTool('hand'); }
+    });
+  }
+
+  function isEditingText() {
+    const tag = document.activeElement.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  }
+
+  function setTool(t) {
+    currentTool = t;
+    document.querySelectorAll('.canvas-tool-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.tool === t);
+    });
+  }
+
+  // ─── ZOOM ────────────────────────────────────────────────────
+  function setZoom(z) {
+    zoom = Math.max(0.1, Math.min(4, z));
+    document.getElementById('canvas-viewport').style.transform = `scale(${zoom})`;
+    document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+  }
+
+  function fitToScreen() {
+    const area = document.getElementById('canvas-area');
+    const padding = 80;
+    const scaleW = (area.clientWidth - padding) / state.canvasW;
+    const scaleH = (area.clientHeight - padding) / state.canvasH;
+    setZoom(Math.min(scaleW, scaleH, 1));
+  }
+
+  // ─── CANVAS SIZE ─────────────────────────────────────────────
+  function updateCanvasSize() {
+    const canvas = document.getElementById('poster-canvas');
+    canvas.style.width = state.canvasW + 'px';
+    canvas.style.height = state.canvasH + 'px';
+    document.getElementById('status-size').textContent = state.canvasW + ' × ' + state.canvasH;
+    updateExportStats();
+  }
+
+  function updateExportStats() {
+    const res = state.exportRes || 2;
+    document.getElementById('stat-w').textContent = state.canvasW * res;
+    document.getElementById('stat-h').textContent = state.canvasH * res;
+  }
+
+  // ─── IMAGE LOADING ───────────────────────────────────────────
+  function loadImage(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      state.imageSrc = e.target.result;
+      imageEl = new Image();
+      imageEl.crossOrigin = 'anonymous';
+      imageEl.onload = () => {
+        renderPoster();
+        toast('Image loaded!', 'success');
+        pushHistory();
+      };
+      imageEl.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ─── RENDER POSTER ───────────────────────────────────────────
+  function renderPoster() {
+    const canvas = document.getElementById('poster-canvas');
+    const W = state.canvasW;
+    const H = state.canvasH;
+    const imgH = Math.round(H * state.imageHeight / 100);
+    const infoH = H - imgH;
+
+    // Build background
+    let bg;
+    if (state.bgGradientDir === 'radial') {
+      bg = `radial-gradient(ellipse at center, ${state.bgColor1}, ${state.bgColor2})`;
+    } else {
+      bg = `linear-gradient(${state.bgGradientDir}, ${state.bgColor1}, ${state.bgColor2})`;
+    }
+    canvas.style.background = bg;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+
+    // Build or update inner HTML
+    canvas.innerHTML = '';
+
+    // ── Image zone
+    if (state.imageSrc) {
+      const imageZone = document.createElement('div');
+      imageZone.className = 'poster-image-zone';
+      imageZone.style.cssText = `height:${imgH}px; top:0; left:0; right:0;`;
+
+      const img = document.createElement('img');
+      img.src = state.imageSrc;
+      img.style.cssText = buildImageStyle();
+      imageZone.appendChild(img);
+
+      // Gradient overlay on image
+      const overlay = document.createElement('div');
+      overlay.className = 'img-overlay';
+      overlay.style.background = `linear-gradient(to bottom, transparent 0%, ${state.bgColor1}22 60%, ${state.bgColor1} 100%)`;
+      imageZone.appendChild(overlay);
+
+      canvas.appendChild(imageZone);
+
+      // Gradient transition
+      const gradTransition = document.createElement('div');
+      gradTransition.className = 'poster-gradient-transition';
+      const tStart = state.transitionStart;
+      const feather = state.transitionFeather;
+      const transY = Math.round(imgH * tStart / 100);
+      const featherPx = Math.round(imgH * feather / 100 * 0.4);
+      gradTransition.style.cssText = `
+        top: ${transY - featherPx}px;
+        height: ${featherPx * 2 + (H - transY)}px;
+        background: linear-gradient(to bottom, transparent, ${state.bgColor2}dd 30%, ${state.bgColor2});
+      `;
+      canvas.appendChild(gradTransition);
+    }
+
+    // ── Info zone
+    const info = document.createElement('div');
+    info.className = 'poster-info-zone';
+    info.style.cssText = `bottom:0; height:${infoH}px; padding:${Math.round(infoH * 0.06)}px ${Math.round(W * 0.055)}px ${Math.round(infoH * 0.05)}px;`;
+
+    // Glow effect below title
+    const glowA = Math.round((state.glowIntensity / 100) * 0.6 * 255).toString(16).padStart(2,'0');
+    const glowR = parseInt(state.glowColor.slice(1,3), 16);
+    const glowG = parseInt(state.glowColor.slice(3,5), 16);
+    const glowB = parseInt(state.glowColor.slice(5,7), 16);
+
+    // Category label
+    const cat = document.createElement('div');
+    cat.className = 'p-category';
+    const mtLabels = {anime:'Anime Series',manga:'Manga',roblox:'Roblox Game',game:'Video Game',film:'Film',series:'TV Series',custom:'Media'};
+    cat.textContent = mtLabels[state.mediaType] || 'Media';
+    cat.style.color = state.subtitleColor;
+    info.appendChild(cat);
+
+    // Title
+    const title = document.createElement('div');
+    title.className = 'p-title';
+    title.textContent = state.title || '';
+    const ts = Math.min(state.titleSize, Math.round(W / 10));
+    const glowStr = state.titleGlow > 0 ? `0 0 ${state.titleGlow * 3}px rgba(${glowR},${glowG},${glowB},0.7), 0 0 ${state.titleGlow}px rgba(${glowR},${glowG},${glowB},0.5)` : 'none';
+    const shadowStr = state.titleShadow > 0 ? `0 ${Math.round(state.titleShadow/2)}px ${state.titleShadow}px rgba(0,0,0,0.8)` : 'none';
+    const combinedShadow = [glowStr !== 'none' ? glowStr : null, shadowStr !== 'none' ? shadowStr : null].filter(Boolean).join(', ') || 'none';
+    title.style.cssText = `
+      font-size:${ts}px;
+      color:${state.titleColor};
+      font-family:${state.titleFont};
+      letter-spacing:${state.titleSpacing}px;
+      text-shadow:${combinedShadow};
+    `;
+    info.appendChild(title);
+
+    // Subtitle
+    if (state.subtitle) {
+      const sub = document.createElement('div');
+      sub.className = 'p-subtitle';
+      sub.textContent = state.subtitle;
+      sub.style.cssText = `font-size:${state.subtitleSize}px; color:${state.subtitleColor};`;
+      info.appendChild(sub);
+    }
+
+    // Tags
+    if (state.tags && state.tags.length > 0) {
+      const tagsRow = document.createElement('div');
+      tagsRow.className = 'p-tags';
+      state.tags.forEach(tag => {
+        const t = document.createElement('span');
+        t.className = 'p-tag';
+        t.textContent = tag;
+        t.style.cssText = `
+          color:${state.glowColor};
+          border-color:rgba(${glowR},${glowG},${glowB},0.4);
+          background:rgba(${glowR},${glowG},${glowB},0.12);
+          font-size:${Math.max(8, Math.round(W / 120))}px;
+        `;
+        tagsRow.appendChild(t);
+      });
+      info.appendChild(tagsRow);
+    }
+
+    // Rating
+    const ratingRow = document.createElement('div');
+    ratingRow.className = 'p-rating-row';
+    const starsEl = document.createElement('span');
+    starsEl.className = 'p-stars';
+    const fullStars = Math.floor(state.rating);
+    const halfStar = state.rating % 1 >= 0.5;
+    let starsHtml = '★'.repeat(fullStars);
+    if (halfStar) starsHtml += '½';
+    starsHtml += '☆'.repeat(5 - fullStars - (halfStar ? 1 : 0));
+    starsEl.textContent = starsHtml;
+    starsEl.style.fontSize = Math.max(12, Math.round(W / 65)) + 'px';
+    ratingRow.appendChild(starsEl);
+
+    if (state.score) {
+      const scoreEl = document.createElement('span');
+      scoreEl.className = 'p-score';
+      scoreEl.textContent = state.score;
+      scoreEl.style.fontSize = Math.max(16, Math.round(W / 45)) + 'px';
+      ratingRow.appendChild(scoreEl);
+      if (state.scoreMax) {
+        const maxEl = document.createElement('span');
+        maxEl.className = 'p-score-max';
+        maxEl.textContent = '/' + state.scoreMax;
+        ratingRow.appendChild(maxEl);
+      }
+    }
+    info.appendChild(ratingRow);
+
+    // Synopsis
+    if (state.synopsis) {
+      const syn = document.createElement('div');
+      syn.className = 'p-synopsis';
+      syn.textContent = state.synopsis;
+      syn.style.cssText = `
+        font-size:${Math.max(9, Math.round(W / 85))}px;
+        color:${state.synopsisColor};
+        -webkit-line-clamp:${state.synopsisLines};
+      `;
+      info.appendChild(syn);
+    }
+
+    // Meta grid
+    if (state.metaFields && state.metaFields.length > 0) {
+      const metaGrid = document.createElement('div');
+      metaGrid.className = 'p-meta-grid';
+      metaGrid.style.gridTemplateColumns = `repeat(${state.metaGridCols}, 1fr)`;
+      state.metaFields.forEach(field => {
+        const item = document.createElement('div');
+        item.className = 'p-meta-item';
+        const label = document.createElement('div');
+        label.className = 'p-meta-label';
+        label.textContent = field.label;
+        const val = document.createElement('div');
+        val.className = 'p-meta-value';
+        val.textContent = field.value;
+        val.style.fontSize = Math.max(9, Math.round(W / 90)) + 'px';
+        item.appendChild(label);
+        item.appendChild(val);
+        metaGrid.appendChild(item);
+      });
+      info.appendChild(metaGrid);
+    }
+
+    // Credits
+    if (state.credits) {
+      const creds = document.createElement('div');
+      creds.className = 'p-credits';
+      creds.textContent = state.credits;
+      info.appendChild(creds);
+    }
+
+    canvas.appendChild(info);
+
+    // Drop overlay always last
+    const dropO = document.createElement('div');
+    dropO.id = 'drop-overlay';
+    dropO.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Drop image here`;
+    canvas.appendChild(dropO);
+  }
+
+  function buildImageStyle() {
+    const flipH = state.imageFlipH ? '-1' : '1';
+    const flipV = state.imageFlipV ? '-1' : '1';
+    const zoom = state.imgZoom / 100;
+    const b = 100 + state.imgBrightness;
+    const c = 100 + state.imgContrast;
+    const s = 100 + state.imgSaturation;
+    const filters = [
+      `brightness(${b}%)`,
+      `contrast(${c}%)`,
+      `saturate(${s}%)`,
+      `hue-rotate(${state.imgHue}deg)`,
+      `blur(${state.imgBlur}px)`,
+      `sepia(${state.imgSepia}%)`,
+    ].join(' ');
+    return `
+      width:100%; height:100%;
+      object-fit:cover;
+      object-position:${50 + state.imgOffsetX/2}% ${50 + state.imgOffsetY/2}%;
+      transform:scaleX(${flipH}) scaleY(${flipV}) scale(${zoom}) rotate(${state.imgRotation}deg);
+      transform-origin:center center;
+      filter:${filters};
+      opacity:${state.imgOpacity / 100};
+    `;
+  }
+
+  // ─── IMAGE CONTROLS ──────────────────────────────────────────
+  function setImageTransform() {
+    state.imgOffsetX = parseInt(document.getElementById('img-offset-x').value);
+    state.imgOffsetY = parseInt(document.getElementById('img-offset-y').value);
+    state.imgZoom = parseInt(document.getElementById('img-zoom').value);
+    state.imgRotation = parseInt(document.getElementById('img-rotation').value);
+    document.getElementById('img-offset-x-val').textContent = state.imgOffsetX;
+    document.getElementById('img-offset-y-val').textContent = state.imgOffsetY;
+    document.getElementById('img-zoom-val').textContent = state.imgZoom + '%';
+    document.getElementById('img-rotation-val').textContent = state.imgRotation + '°';
+    renderPoster();
+  }
+
+  function flipImageH() { state.imageFlipH = !state.imageFlipH; renderPoster(); }
+  function flipImageV() { state.imageFlipV = !state.imageFlipV; renderPoster(); }
+
+  function updateImageFilter() {
+    state.imgBrightness = parseInt(document.getElementById('adj-brightness').value);
+    state.imgContrast = parseInt(document.getElementById('adj-contrast').value);
+    state.imgSaturation = parseInt(document.getElementById('adj-saturation').value);
+    state.imgHue = parseInt(document.getElementById('adj-hue').value);
+    state.imgBlur = parseInt(document.getElementById('adj-blur').value);
+    state.imgSepia = parseInt(document.getElementById('adj-sepia').value);
+    state.imgOpacity = parseInt(document.getElementById('adj-opacity').value);
+    document.getElementById('adj-brightness-val').textContent = state.imgBrightness;
+    document.getElementById('adj-contrast-val').textContent = state.imgContrast;
+    document.getElementById('adj-saturation-val').textContent = state.imgSaturation;
+    document.getElementById('adj-hue-val').textContent = state.imgHue + '°';
+    document.getElementById('adj-blur-val').textContent = state.imgBlur;
+    document.getElementById('adj-sepia-val').textContent = state.imgSepia + '%';
+    document.getElementById('adj-opacity-val').textContent = state.imgOpacity + '%';
+    renderPoster();
+  }
+
+  function resetImageAdjustments() {
+    ['adj-brightness','adj-contrast','adj-saturation','adj-hue','adj-blur','adj-sepia'].forEach(id => {
+      document.getElementById(id).value = 0;
+    });
+    document.getElementById('adj-opacity').value = 100;
+    updateImageFilter();
+    toast('Adjustments reset', 'success');
+  }
+
+  // ─── BACKGROUND ───────────────────────────────────────────────
+  function setBgColor1(val) {
+    state.bgColor1 = val;
+    document.getElementById('bg-color1').value = val;
+    document.getElementById('bg-color1-hex').value = val;
+    document.querySelector('#bg-color1').closest('.color-swatch').style.background = val;
+    renderPoster();
+  }
+
+  function setBgColor2(val) {
+    state.bgColor2 = val;
+    document.getElementById('bg-color2').value = val;
+    document.getElementById('bg-color2-hex').value = val;
+    document.querySelector('#bg-color2').closest('.color-swatch').style.background = val;
+    renderPoster();
+  }
+
+  function setBgGradient() {
+    state.bgGradientDir = document.getElementById('bg-gradient-dir').value;
+    renderPoster();
+  }
+
+  function setTransition() {
+    state.transitionStart = parseInt(document.getElementById('transition-start').value);
+    state.transitionFeather = parseInt(document.getElementById('transition-feather').value);
+    document.getElementById('transition-start-val').textContent = state.transitionStart + '%';
+    document.getElementById('transition-feather-val').textContent = state.transitionFeather + '%';
+    renderPoster();
+  }
+
+  function setImageHeight(val) {
+    state.imageHeight = parseInt(val);
+    document.getElementById('image-height-val').textContent = val + '%';
+    renderPoster();
+  }
+
+  function setGlowColor(val) {
+    state.glowColor = val;
+    document.getElementById('glow-color').value = val;
+    document.getElementById('glow-hex').value = val;
+    document.getElementById('glow-swatch').style.background = val;
+    renderPoster();
+  }
+
+  function setGlowIntensity(val) {
+    state.glowIntensity = parseInt(val);
+    document.getElementById('glow-intensity-val').textContent = val + '%';
+    renderPoster();
+  }
+
+  // ─── CONTENT ─────────────────────────────────────────────────
+  function setMediaType(val) {
+    state.mediaType = val;
+    renderPoster();
+  }
+
+  function updateContent() {
+    state.title = document.getElementById('c-title').value;
+    state.titleSize = parseInt(document.getElementById('title-size').value);
+    state.titleColor = document.getElementById('title-color').value;
+    state.titleFont = document.getElementById('title-font').value;
+    state.titleSpacing = parseInt(document.getElementById('title-spacing').value);
+    state.titleShadow = parseInt(document.getElementById('title-shadow').value);
+    state.titleGlow = parseInt(document.getElementById('title-glow').value);
+    state.subtitle = document.getElementById('c-subtitle').value;
+    state.subtitleSize = parseInt(document.getElementById('subtitle-size').value);
+    state.subtitleColor = document.getElementById('subtitle-color').value;
+    state.score = document.getElementById('c-score').value;
+    state.scoreMax = document.getElementById('c-score-max').value;
+    state.synopsis = document.getElementById('c-synopsis').value;
+    state.synopsisLines = parseInt(document.getElementById('synopsis-lines').value) || 3;
+    state.synopsisColor = document.getElementById('synopsis-color').value;
+    state.metaGridCols = parseInt(document.getElementById('meta-grid-cols').value);
+    state.credits = document.getElementById('c-credits').value;
+
+    // Sync range labels
+    document.getElementById('title-size-val').textContent = state.titleSize;
+    document.getElementById('subtitle-size-val').textContent = state.subtitleSize;
+    document.getElementById('title-spacing-val').textContent = state.titleSpacing;
+    document.getElementById('title-shadow-val').textContent = state.titleShadow;
+    document.getElementById('title-glow-val').textContent = state.titleGlow;
+
+    renderPoster();
+  }
+
+  // ─── TAGS ────────────────────────────────────────────────────
+  function initTagsEditor() {
+    renderTagsEditor();
+  }
+
+  function renderTagsEditor() {
+    const list = document.getElementById('tags-edit-list');
+    list.innerHTML = '';
+    state.tags.forEach((tag, i) => {
+      const pill = document.createElement('div');
+      pill.className = 'tag-pill-edit';
+      pill.innerHTML = `${tag}<button class="tag-remove" onclick="PF.removeTag(${i})">×</button>`;
+      list.appendChild(pill);
+    });
+  }
+
+  function addTag() {
+    const input = document.getElementById('tag-input');
+    const val = input.value.trim();
+    if (!val) return;
+    state.tags.push(val);
+    input.value = '';
+    renderTagsEditor();
+    renderPoster();
+    pushHistory();
+  }
+
+  function removeTag(i) {
+    state.tags.splice(i, 1);
+    renderTagsEditor();
+    renderPoster();
+    pushHistory();
+  }
+
+  // ─── STARS ───────────────────────────────────────────────────
+  function initStarsEditor() {
+    const container = document.getElementById('stars-editor');
+    container.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'star-btn';
+      btn.textContent = '★';
+      btn.dataset.val = i;
+      btn.style.color = state.rating >= i ? '#f59e0b' : 'var(--bg-4)';
+      btn.addEventListener('click', () => {
+        state.rating = i;
+        updateStarsDisplay();
+        renderPoster();
+        pushHistory();
+      });
+      container.appendChild(btn);
+    }
+  }
+
+  function updateStarsDisplay() {
+    document.querySelectorAll('.star-btn').forEach(btn => {
+      btn.style.color = state.rating >= parseInt(btn.dataset.val) ? '#f59e0b' : 'var(--bg-4)';
+    });
+  }
+
+  // ─── META FIELDS ─────────────────────────────────────────────
+  function initMetaFields() {
+    renderMetaFields();
+  }
+
+  function renderMetaFields() {
+    const list = document.getElementById('meta-fields-list');
+    list.innerHTML = '';
+    state.metaFields.forEach((field, i) => {
+      const row = document.createElement('div');
+      row.className = 'meta-row';
+      row.innerHTML = `
+        <input class="input" placeholder="Label" value="${escHtml(field.label)}" style="flex:0.8; font-size:11px;" oninput="PF.updateMetaField(${i}, 'label', this.value)">
+        <input class="input" placeholder="Value" value="${escHtml(field.value)}" style="flex:1; font-size:11px;" oninput="PF.updateMetaField(${i}, 'value', this.value)">
+        <button class="meta-remove" onclick="PF.removeMetaField(${i})">✕</button>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  function addMetaField() {
+    state.metaFields.push({ label: 'Label', value: 'Value' });
+    renderMetaFields();
+    renderPoster();
+  }
+
+  function removeMetaField(i) {
+    state.metaFields.splice(i, 1);
+    renderMetaFields();
+    renderPoster();
+    pushHistory();
+  }
+
+  function updateMetaField(i, key, val) {
+    state.metaFields[i][key] = val;
+    renderPoster();
+  }
+
+  // ─── LAYERS ──────────────────────────────────────────────────
+  function addLayer(type) {
+    const id = 'layer_' + Date.now();
+    const defaults = {
+      title: { name: 'Title', type: 'title', icon: 'T', visible: true, locked: false, opacity: 100 },
+      subtitle: { name: 'Subtitle', type: 'subtitle', icon: 'T', visible: true, locked: false, opacity: 100 },
+      synopsis: { name: 'Synopsis', type: 'synopsis', icon: '¶', visible: true, locked: false, opacity: 100 },
+      tags: { name: 'Tags', type: 'tags', icon: '#', visible: true, locked: false, opacity: 100 },
+      rating: { name: 'Rating', type: 'rating', icon: '★', visible: true, locked: false, opacity: 100 },
+      meta: { name: 'Info', type: 'meta', icon: 'ℹ', visible: true, locked: false, opacity: 100 },
+      credits: { name: 'Credits', type: 'credits', icon: '©', visible: true, locked: false, opacity: 100 },
+      text: { name: 'Text', type: 'text', icon: 'A', visible: true, locked: false, opacity: 100, text: 'Custom Text', x: 50, y: 50, w: 200, h: 50 },
+    };
+    const layer = { id, ...(defaults[type] || defaults.text) };
+    state.layers.unshift(layer);
+    state.selectedLayerId = id;
+    renderLayers();
+    pushHistory();
+    toast(`Added ${layer.name} layer`, 'success');
+  }
+
+  function renderLayers() {
+    const list = document.getElementById('layers-list');
+    list.innerHTML = '';
+
+    // Built-in pseudo-layers always at top
+    const builtInLayers = [
+      { id: '__image__', name: 'Background Image', icon: '🖼', type: 'image' },
+      { id: '__bg__', name: 'Background', icon: '🎨', type: 'bg' },
+    ];
+
+    [...builtInLayers, ...state.layers].forEach(layer => {
+      const item = document.createElement('div');
+      item.className = 'layer-item' + (layer.id === state.selectedLayerId ? ' active' : '');
+      if (layer.locked) item.classList.add('locked');
+      item.dataset.id = layer.id;
+      item.innerHTML = `
+        <div class="layer-icon">${layer.icon}</div>
+        <div class="layer-name">${layer.name}</div>
+        <div class="layer-controls">
+          <button class="layer-vis-btn" title="${layer.visible !== false ? 'Hide' : 'Show'}" onclick="PF.toggleLayerVisibility('${layer.id}', event)">
+            ${layer.visible !== false ? '👁' : '🙈'}
+          </button>
+          <button class="layer-lock-btn" title="${layer.locked ? 'Unlock' : 'Lock'}" onclick="PF.toggleLayerLock('${layer.id}', event)">
+            ${layer.locked ? '🔒' : '🔓'}
+          </button>
+        </div>
+      `;
+      item.addEventListener('click', () => selectLayer(layer.id));
+      list.appendChild(item);
+    });
+
+    document.getElementById('status-layers').textContent = (state.layers.length + 2) + ' layers';
+  }
+
+  function selectLayer(id) {
+    state.selectedLayerId = id;
+    renderLayers();
+    updateLayerProps();
+  }
+
+  function toggleLayerVisibility(id, e) {
+    e.stopPropagation();
+    const layer = state.layers.find(l => l.id === id);
+    if (layer) { layer.visible = !layer.visible; renderLayers(); renderPoster(); }
+  }
+
+  function toggleLayerLock(id, e) {
+    e.stopPropagation();
+    const layer = state.layers.find(l => l.id === id);
+    if (layer) { layer.locked = !layer.locked; renderLayers(); }
+  }
+
+  function duplicateSelectedLayer() {
+    const layer = state.layers.find(l => l.id === state.selectedLayerId);
+    if (!layer) return;
+    const copy = JSON.parse(JSON.stringify(layer));
+    copy.id = 'layer_' + Date.now();
+    copy.name = layer.name + ' Copy';
+    state.layers.unshift(copy);
+    state.selectedLayerId = copy.id;
+    renderLayers();
+    pushHistory();
+    toast('Layer duplicated', 'success');
+  }
+
+  function deleteSelectedLayer() {
+    const idx = state.layers.findIndex(l => l.id === state.selectedLayerId);
+    if (idx === -1) return;
+    state.layers.splice(idx, 1);
+    state.selectedLayerId = null;
+    renderLayers();
+    renderPoster();
+    pushHistory();
+  }
+
+  function updateLayerProps() {
+    const section = document.getElementById('layer-props-section');
+    if (!state.selectedLayerId || state.selectedLayerId.startsWith('__')) {
+      section.style.display = 'none';
+      return;
+    }
+    const layer = state.layers.find(l => l.id === state.selectedLayerId);
+    if (!layer) { section.style.display = 'none'; return; }
+
+    section.style.display = 'block';
+    document.getElementById('layer-props-title').textContent = layer.name;
+    const body = document.getElementById('layer-props-body');
+    body.innerHTML = `
+      <div class="form-row">
+        <div class="form-label">Name</div>
+        <input class="input" value="${escHtml(layer.name)}" oninput="PF.updateLayerName(this.value)">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Opacity</div>
+        <div class="range-row">
+          <input type="range" class="range-input" value="${layer.opacity || 100}" min="0" max="100" oninput="PF.updateLayerOpacity(this.value, this.nextElementSibling)">
+          <span class="range-val">${layer.opacity || 100}%</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function updateLayerName(val) {
+    const layer = state.layers.find(l => l.id === state.selectedLayerId);
+    if (layer) { layer.name = val; renderLayers(); }
+  }
+
+  function updateLayerOpacity(val, span) {
+    const layer = state.layers.find(l => l.id === state.selectedLayerId);
+    if (layer) { layer.opacity = parseInt(val); span.textContent = val + '%'; }
+  }
+
+  // ─── PALETTE EXTRACTION ──────────────────────────────────────
+  function extractPalette() {
+    if (!state.imageSrc) { toast('Please upload an image first', 'warn'); return; }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 50; canvas.height = 50;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 50, 50);
+      const data = ctx.getImageData(0, 0, 50, 50).data;
+
+      // Simple dominant color extraction
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < data.length; i += 16) {
+        r += data[i]; g += data[i+1]; b += data[i+2]; count++;
+      }
+      r = Math.floor(r / count);
+      g = Math.floor(g / count);
+      b = Math.floor(b / count);
+
+      // Darken for bg
+      const dark = rgbToHex(Math.floor(r*0.15), Math.floor(g*0.15), Math.floor(b*0.15));
+      const mid = rgbToHex(Math.floor(r*0.25), Math.floor(g*0.25), Math.floor(b*0.25));
+      const accent = rgbToHex(Math.min(255, r+40), Math.min(255, g+40), Math.min(255, b+80));
+
+      setBgColor1(dark);
+      setBgColor2(mid);
+      setGlowColor(accent);
+      toast('Palette extracted from image!', 'success');
+    };
+    img.src = state.imageSrc;
+  }
+
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2,'0')).join('');
+  }
+
+  // ─── TEMPLATES ───────────────────────────────────────────────
+  const TEMPLATES = [
+    {
+      name: 'Anime Premium',
+      badge: 'ANIME',
+      bg: 'linear-gradient(135deg, #0a0012, #1a0a2e)',
+      accent: '#c084fc',
+      preview: { bg: 'linear-gradient(135deg, #1a0a2e, #2d1155)', text: '#fff' },
+      config: {
+        bgColor1: '#0a0012', bgColor2: '#1a0a2e', glowColor: '#c084fc',
+        subtitleColor: '#c084fc', titleColor: '#ffffff',
+        tags: ['Action', 'Adventure', 'Fantasy'],
+        bgGradientDir: '135deg',
+      }
+    },
+    {
+      name: 'Netflix Style',
+      badge: 'FILM',
+      preview: { bg: 'linear-gradient(180deg, #1a0000, #e50914)', text: '#fff' },
+      config: {
+        bgColor1: '#141414', bgColor2: '#0a0000', glowColor: '#e50914',
+        subtitleColor: '#e50914', titleColor: '#ffffff',
+        bgGradientDir: 'to bottom',
+      }
+    },
+    {
+      name: 'Roblox Premium',
+      badge: 'ROBLOX',
+      preview: { bg: 'linear-gradient(135deg, #001a3a, #002d6e)', text: '#fff' },
+      config: {
+        bgColor1: '#001022', bgColor2: '#002050', glowColor: '#00aaff',
+        subtitleColor: '#00aaff', titleColor: '#ffffff',
+        bgGradientDir: '135deg',
+      }
+    },
+    {
+      name: 'Steam Style',
+      badge: 'GAME',
+      preview: { bg: 'linear-gradient(135deg, #0e1117, #1b2838)', text: '#c7d5e0' },
+      config: {
+        bgColor1: '#0e1117', bgColor2: '#1b2838', glowColor: '#66c0f4',
+        subtitleColor: '#66c0f4', titleColor: '#c7d5e0',
+        bgGradientDir: 'to bottom right',
+      }
+    },
+    {
+      name: 'Minimal Dark',
+      badge: 'MINIMAL',
+      preview: { bg: '#0a0a0f', text: '#f0f0f5' },
+      config: {
+        bgColor1: '#0a0a0f', bgColor2: '#111118', glowColor: '#ffffff',
+        subtitleColor: '#888890', titleColor: '#ffffff',
+        bgGradientDir: 'to bottom',
+      }
+    },
+    {
+      name: 'Manga Premium',
+      badge: 'MANGA',
+      preview: { bg: 'linear-gradient(135deg, #1a0000, #3d0000)', text: '#fff' },
+      config: {
+        bgColor1: '#120008', bgColor2: '#2d000e', glowColor: '#ff2244',
+        subtitleColor: '#ff6688', titleColor: '#ffffff',
+        bgGradientDir: '135deg',
+      }
+    },
+    {
+      name: 'Gaming Premium',
+      badge: 'GAME',
+      preview: { bg: 'linear-gradient(135deg, #001a12, #003328)', text: '#00ff88' },
+      config: {
+        bgColor1: '#000f0a', bgColor2: '#001a12', glowColor: '#00ff88',
+        subtitleColor: '#00cc66', titleColor: '#ffffff',
+        bgGradientDir: '135deg',
+      }
+    },
+    {
+      name: 'Apple Style',
+      badge: 'MINIMAL',
+      preview: { bg: 'linear-gradient(135deg, #1c1c1e, #2c2c2e)', text: '#fff' },
+      config: {
+        bgColor1: '#1c1c1e', bgColor2: '#000000', glowColor: '#0071e3',
+        subtitleColor: '#0071e3', titleColor: '#f5f5f7',
+        bgGradientDir: 'to bottom',
+      }
+    },
+    {
+      name: 'Film Festival',
+      badge: 'FILM',
+      preview: { bg: 'linear-gradient(180deg, #0a0800, #1a1200)', text: '#f5e642' },
+      config: {
+        bgColor1: '#0a0800', bgColor2: '#1a1200', glowColor: '#f5e642',
+        subtitleColor: '#d4af37', titleColor: '#fffff0',
+        bgGradientDir: 'to bottom',
+      }
+    },
+  ];
+
+  function renderTemplatesGrid() {
+    const grid = document.getElementById('templates-grid');
+    grid.innerHTML = '';
+    TEMPLATES.forEach((tmpl, i) => {
+      const card = document.createElement('div');
+      card.className = 'template-card';
+      card.innerHTML = `
+        <div class="template-preview" style="background:${tmpl.preview.bg}">
+          <div class="template-badge">${tmpl.badge}</div>
+          <div style="font-family:var(--font-hero); font-weight:800; font-size:13px; color:${tmpl.preview.text}; line-height:1.1; text-shadow:0 2px 8px rgba(0,0,0,0.5)">
+            POSTER<br>TITLE
+          </div>
+        </div>
+        <div class="template-name">${tmpl.name}</div>
+      `;
+      card.addEventListener('click', () => applyTemplate(i));
+      grid.appendChild(card);
+    });
+  }
+
+  function applyTemplate(idx) {
+    const t = TEMPLATES[idx];
+    Object.assign(state, t.config);
+
+    // Update UI
+    if (t.config.bgColor1) { document.getElementById('bg-color1').value = t.config.bgColor1; document.getElementById('bg-color1-hex').value = t.config.bgColor1; }
+    if (t.config.bgColor2) { document.getElementById('bg-color2').value = t.config.bgColor2; document.getElementById('bg-color2-hex').value = t.config.bgColor2; }
+    if (t.config.glowColor) { document.getElementById('glow-color').value = t.config.glowColor; document.getElementById('glow-hex').value = t.config.glowColor; document.getElementById('glow-swatch').style.background = t.config.glowColor; }
+    if (t.config.subtitleColor) { document.getElementById('subtitle-color').value = t.config.subtitleColor; }
+
+    closeModal('templates-modal');
+    renderPoster();
+    pushHistory();
+    toast(`Template "${t.name}" applied!`, 'success');
+  }
+
+  // ─── HISTORY ─────────────────────────────────────────────────
+  function pushHistory() {
+    if (historyIndex < history.length - 1) {
+      history = history.slice(0, historyIndex + 1);
+    }
+    history.push(JSON.stringify(state));
+    if (history.length > MAX_HISTORY) history.shift();
+    historyIndex = history.length - 1;
+    updateHistoryButtons();
+  }
+
+  function undo() {
+    if (historyIndex <= 0) return;
+    historyIndex--;
+    restoreState(JSON.parse(history[historyIndex]));
+  }
+
+  function redo() {
+    if (historyIndex >= history.length - 1) return;
+    historyIndex++;
+    restoreState(JSON.parse(history[historyIndex]));
+  }
+
+  function restoreState(s) {
+    state = s;
+    syncUIFromState();
+    renderPoster();
+    renderLayers();
+    renderMetaFields();
+    renderTagsEditor();
+    updateStarsDisplay();
+    updateHistoryButtons();
+  }
+
+  function syncUIFromState() {
+    const fields = {
+      'c-title': 'title', 'c-subtitle': 'subtitle', 'c-synopsis': 'synopsis',
+      'c-score': 'score', 'c-score-max': 'scoreMax', 'c-credits': 'credits',
+    };
+    Object.entries(fields).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el && state[key] !== undefined) el.value = state[key];
+    });
+    const ranges = {
+      'title-size': 'titleSize', 'subtitle-size': 'subtitleSize',
+      'title-spacing': 'titleSpacing', 'title-shadow': 'titleShadow', 'title-glow': 'titleGlow',
+      'glow-intensity': 'glowIntensity', 'transition-start': 'transitionStart',
+      'transition-feather': 'transitionFeather', 'image-height': 'imageHeight',
+    };
+    Object.entries(ranges).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el && state[key] !== undefined) el.value = state[key];
+    });
+    // Colors
+    setBgColor1(state.bgColor1);
+    setBgColor2(state.bgColor2);
+    setGlowColor(state.glowColor);
+  }
+
+  function updateHistoryButtons() {
+    document.getElementById('undo-btn').disabled = historyIndex <= 0;
+    document.getElementById('redo-btn').disabled = historyIndex >= history.length - 1;
+  }
+
+  // ─── AUTO SAVE ───────────────────────────────────────────────
+  function autoSave() {
+    try {
+      const saveState = JSON.parse(JSON.stringify(state));
+      // Don't save full imageSrc in autosave (too large for localStorage)
+      const imgRef = saveState.imageSrc ? 'IMAGE_PRESENT' : null;
+      saveState._imageSrcRef = imgRef;
+      saveState.imageSrc = null;
+      localStorage.setItem('pf_autosave', JSON.stringify(saveState));
+    } catch(e) { /* ignore quota errors */ }
+  }
+
+  // ─── SAVE/LOAD JSON ─────────────────────────────────────────
+  function saveJSON() {
+    const data = JSON.stringify(state, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'posterforge-project.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Project saved!', 'success');
+  }
+
+  function loadJSON(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const loaded = JSON.parse(e.target.result);
+        state = Object.assign(state, loaded);
+        syncUIFromState();
+        renderPoster();
+        renderLayers();
+        renderMetaFields();
+        renderTagsEditor();
+        initStarsEditor();
+        updateStarsDisplay();
+        toast('Project loaded!', 'success');
+        pushHistory();
+      } catch(err) {
+        toast('Invalid project file', 'error');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ─── EXPORT ─────────────────────────────────────────────────
+  async function exportPoster() {
+    toast('Preparing export…', 'success');
+    showExportProgress(10);
+
+    const scale = state.exportRes || 2;
+    const W = state.canvasW;
+    const H = state.canvasH;
+    const DW = W * scale;
+    const DH = H * scale;
+
+    const canvas = document.getElementById('export-canvas');
+    canvas.width = DW;
+    canvas.height = DH;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    showExportProgress(20);
+
+    // Background
+    let bgFill;
+    if (state.bgGradientDir === 'radial') {
+      const rg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)/1.5);
+      rg.addColorStop(0, state.bgColor1);
+      rg.addColorStop(1, state.bgColor2);
+      bgFill = rg;
+    } else {
+      const angleMap = {
+        'to bottom': 90, 'to bottom right': 135, '135deg': 135, 'to right': 0,
+      };
+      const angle = ((angleMap[state.bgGradientDir] || 90) * Math.PI) / 180;
+      const x0 = W/2 - Math.cos(angle) * W/2;
+      const y0 = H/2 - Math.sin(angle) * H/2;
+      const x1 = W/2 + Math.cos(angle) * W/2;
+      const y1 = H/2 + Math.sin(angle) * H/2;
+      const lg = ctx.createLinearGradient(x0, y0, x1, y1);
+      lg.addColorStop(0, state.bgColor1);
+      lg.addColorStop(1, state.bgColor2);
+      bgFill = lg;
+    }
+    ctx.fillStyle = bgFill;
+    ctx.fillRect(0, 0, W, H);
+
+    showExportProgress(35);
+
+    // Image
+    const imgH = Math.round(H * state.imageHeight / 100);
+    if (state.imageSrc && imageEl && imageEl.complete) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, W, imgH);
+      ctx.clip();
+
+      // Apply image transforms
+      const sx = state.imageFlipH ? -1 : 1;
+      const sy = state.imageFlipV ? -1 : 1;
+      const iz = state.imgZoom / 100;
+      const ox = (state.imgOffsetX / 200) * W;
+      const oy = (state.imgOffsetY / 200) * H;
+      const rot = (state.imgRotation * Math.PI) / 180;
+
+      ctx.translate(W/2 + ox, imgH/2 + oy);
+      ctx.rotate(rot);
+      ctx.scale(sx * iz, sy * iz);
+
+      // Compute aspect-fit cover dimensions
+      const imgAR = imageEl.naturalWidth / imageEl.naturalHeight;
+      const zoneAR = W / imgH;
+      let dw, dh;
+      if (imgAR > zoneAR) { dh = imgH; dw = dh * imgAR; }
+      else { dw = W; dh = dw / imgAR; }
+
+      // Apply CSS filter equivalent
+      const f = [];
+      if (state.imgBrightness !== 0) f.push(`brightness(${100 + state.imgBrightness}%)`);
+      if (state.imgContrast !== 0) f.push(`contrast(${100 + state.imgContrast}%)`);
+      if (state.imgSaturation !== 0) f.push(`saturate(${100 + state.imgSaturation}%)`);
+      if (state.imgHue !== 0) f.push(`hue-rotate(${state.imgHue}deg)`);
+      if (state.imgBlur > 0) f.push(`blur(${state.imgBlur}px)`);
+      if (state.imgSepia > 0) f.push(`sepia(${state.imgSepia}%)`);
+      if (f.length > 0) ctx.filter = f.join(' ');
+
+      ctx.globalAlpha = state.imgOpacity / 100;
+      ctx.drawImage(imageEl, -dw/2, -dh/2, dw, dh);
+      ctx.filter = 'none';
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
+      // Gradient overlay on image
+      const imgOverlay = ctx.createLinearGradient(0, 0, 0, imgH);
+      imgOverlay.addColorStop(0, 'transparent');
+      imgOverlay.addColorStop(0.6, hexWithAlpha(state.bgColor1, 0.13));
+      imgOverlay.addColorStop(1, state.bgColor1);
+      ctx.fillStyle = imgOverlay;
+      ctx.fillRect(0, 0, W, imgH);
+
+      // Transition
+      const tStart = state.transitionStart;
+      const feather = state.transitionFeather;
+      const transY = Math.round(imgH * tStart / 100);
+      const featherPx = Math.round(imgH * feather / 100 * 0.4);
+      const transGrad = ctx.createLinearGradient(0, transY - featherPx, 0, H);
+      transGrad.addColorStop(0, 'transparent');
+      transGrad.addColorStop(0.3, hexWithAlpha(state.bgColor2, 0.87));
+      transGrad.addColorStop(1, state.bgColor2);
+      ctx.fillStyle = transGrad;
+      ctx.fillRect(0, transY - featherPx, W, H - (transY - featherPx));
+    }
+
+    showExportProgress(55);
+
+    // Info zone — render text directly on canvas
+    const infoH = H - imgH;
+    const px = Math.round(W * 0.055);
+    const py = Math.round(infoH * 0.06);
+    let curY = (H - infoH) + py;
+
+    const glowR = parseInt(state.glowColor.slice(1,3), 16);
+    const glowG = parseInt(state.glowColor.slice(3,5), 16);
+    const glowB = parseInt(state.glowColor.slice(5,7), 16);
+    const glowA = state.glowIntensity / 100;
+
+    // Category
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = state.subtitleColor;
+    const catFontSize = Math.max(7, Math.round(W / 130));
+    ctx.font = `600 ${catFontSize}px 'Inter', sans-serif`;
+    ctx.letterSpacing = '2px';
+    const mtLabels2 = {anime:'ANIME SERIES',manga:'MANGA',roblox:'ROBLOX GAME',game:'VIDEO GAME',film:'FILM',series:'TV SERIES',custom:'MEDIA'};
+    ctx.fillText(mtLabels2[state.mediaType] || 'MEDIA', px, curY + catFontSize);
+    curY += catFontSize + 8;
+    ctx.restore();
+
+    // Title
+    const ts = Math.min(state.titleSize, Math.round(W / 10));
+    ctx.save();
+    ctx.fillStyle = state.titleColor;
+    ctx.font = `800 ${ts}px 'Syne', sans-serif`;
+    ctx.letterSpacing = state.titleSpacing + 'px';
+
+    if (state.titleGlow > 0) {
+      ctx.shadowColor = `rgba(${glowR},${glowG},${glowB},${glowA * 0.8})`;
+      ctx.shadowBlur = state.titleGlow * 4;
+    }
+    if (state.titleShadow > 0) {
+      ctx.shadowColor = `rgba(0,0,0,0.8)`;
+      ctx.shadowBlur = state.titleShadow;
+      ctx.shadowOffsetY = Math.round(state.titleShadow / 2);
+    }
+
+    const maxW = W - px * 2;
+    const titleLines = wrapText(ctx, state.title || '', maxW);
+    titleLines.forEach(line => {
+      ctx.fillText(line, px, curY + ts);
+      curY += ts * 1.05;
+    });
+    ctx.restore();
+    curY += 4;
+
+    // Subtitle
+    if (state.subtitle) {
+      const sfs = state.subtitleSize;
+      ctx.save();
+      ctx.fillStyle = state.subtitleColor;
+      ctx.globalAlpha = 0.85;
+      ctx.font = `400 ${sfs}px 'Space Grotesk', sans-serif`;
+      ctx.fillText(state.subtitle, px, curY + sfs);
+      curY += sfs + 12;
+      ctx.restore();
+    }
+
+    // Tags
+    if (state.tags && state.tags.length > 0) {
+      const tagFs = Math.max(8, Math.round(W / 120));
+      ctx.font = `600 ${tagFs}px 'Inter', sans-serif`;
+      let tagX = px;
+      state.tags.forEach(tag => {
+        const tw = ctx.measureText(tag).width;
+        const tagW = tw + 20;
+        const tagH = tagFs + 10;
+        const tagY = curY;
+
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = state.glowColor;
+        roundRect(ctx, tagX, tagY, tagW, tagH, tagH / 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalAlpha = 0.4;
+        ctx.strokeStyle = state.glowColor;
+        ctx.lineWidth = 0.8;
+        roundRect(ctx, tagX, tagY, tagW, tagH, tagH / 2);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.fillStyle = state.glowColor;
+        ctx.font = `600 ${tagFs}px 'Inter', sans-serif`;
+        ctx.fillText(tag, tagX + 10, tagY + tagH * 0.68);
+        ctx.restore();
+
+        tagX += tagW + 5;
+      });
+      curY += tagFs + 16;
+    }
+
+    showExportProgress(70);
+
+    // Rating row
+    {
+      const starFs = Math.max(12, Math.round(W / 65));
+      ctx.save();
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = `${starFs}px serif`;
+      const fullStars = Math.floor(state.rating);
+      let stars = '★'.repeat(fullStars);
+      if (state.rating % 1 >= 0.5) stars += '½';
+      stars += '☆'.repeat(5 - fullStars - (state.rating % 1 >= 0.5 ? 1 : 0));
+      ctx.fillText(stars, px, curY + starFs);
+      ctx.restore();
+
+      if (state.score) {
+        const scoreFs = Math.max(16, Math.round(W / 45));
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `700 ${scoreFs}px 'Space Grotesk', sans-serif`;
+        ctx.fillText(state.score, px + starFs * 5.5 + 8, curY + scoreFs * 0.8);
+        if (state.scoreMax) {
+          ctx.fillStyle = 'rgba(255,255,255,0.5)';
+          ctx.font = `400 ${Math.round(scoreFs * 0.6)}px 'Space Grotesk', sans-serif`;
+          ctx.fillText('/' + state.scoreMax, px + starFs * 5.5 + 8 + ctx.measureText(state.score).width + 3, curY + scoreFs * 0.8);
+        }
+        ctx.restore();
+      }
+      curY += starFs + 12;
+    }
+
+    // Synopsis
+    if (state.synopsis) {
+      const synFs = Math.max(9, Math.round(W / 85));
+      ctx.save();
+      ctx.fillStyle = state.synopsisColor;
+      ctx.globalAlpha = 0.7;
+      ctx.font = `400 ${synFs}px 'Inter', sans-serif`;
+      const maxWsyn = W - px * 2;
+      const synLines = wrapText(ctx, state.synopsis, maxWsyn);
+      const maxLines = state.synopsisLines;
+      synLines.slice(0, maxLines).forEach((line, li) => {
+        const isLast = li === maxLines - 1 && synLines.length > maxLines;
+        ctx.fillText(isLast ? line.slice(0, -3) + '…' : line, px, curY + synFs);
+        curY += synFs * 1.65;
+      });
+      ctx.restore();
+      curY += 4;
+    }
+
+    // Meta grid
+    if (state.metaFields && state.metaFields.length > 0) {
+      const metaCols = state.metaGridCols;
+      const colW = (W - px * 2) / metaCols;
+      const labelFs = Math.max(7, Math.round(W / 140));
+      const valFs = Math.max(9, Math.round(W / 90));
+      const rowH = labelFs + valFs + 12;
+
+      state.metaFields.forEach((field, i) => {
+        const col = i % metaCols;
+        const row = Math.floor(i / metaCols);
+        const fx = px + col * colW;
+        const fy = curY + row * rowH;
+
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = 0.4;
+        ctx.font = `600 ${labelFs}px 'Inter', sans-serif`;
+        ctx.letterSpacing = '1.5px';
+        ctx.fillText(field.label.toUpperCase(), fx, fy + labelFs);
+        ctx.restore();
+
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = 0.85;
+        ctx.font = `500 ${valFs}px 'Inter', sans-serif`;
+        ctx.fillText(field.value, fx, fy + labelFs + valFs + 2);
+        ctx.restore();
+      });
+
+      const metaRows = Math.ceil(state.metaFields.length / metaCols);
+      curY += metaRows * rowH + 8;
+    }
+
+    showExportProgress(85);
+
+    // Credits
+    if (state.credits) {
+      const credFs = Math.max(7, Math.round(W / 130));
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(px, H - credFs - 18);
+      ctx.lineTo(W - px, H - credFs - 18);
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `400 ${credFs}px 'Inter', sans-serif`;
+      ctx.fillText(state.credits, px, H - 14);
+      ctx.restore();
+    }
+
+    showExportProgress(95);
+
+    // Export
+    const fmt = state.exportFmt || 'png';
+    const quality = (state.exportQuality || 95) / 100;
+    const mimeTypes = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
+    const mimeType = mimeTypes[fmt] || 'image/png';
+    const ext = fmt === 'jpg' ? 'jpg' : fmt;
+
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const filename = (state.title || 'poster').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.href = url;
+      a.download = `${filename}_${DW}x${DH}.${ext}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showExportProgress(0);
+      toast(`Exported at ${DW}×${DH}px!`, 'success');
+    }, mimeType, fmt === 'png' ? undefined : quality);
+  }
+
+  function showExportProgress(pct) {
+    const bar = document.getElementById('export-progress');
+    const fill = document.getElementById('export-progress-fill');
+    if (!bar || !fill) return;
+    if (pct === 0) { bar.style.display = 'none'; fill.style.width = '0%'; return; }
+    bar.style.display = 'block';
+    fill.style.width = pct + '%';
+  }
+
+  // Text wrapping for canvas
+  function wrapText(ctx, text, maxW) {
+    const words = text.split(' ');
+    const lines = [];
+    let line = '';
+    words.forEach(word => {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxW && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  // Draw rounded rect
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function hexWithAlpha(hex, alpha) {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  // ─── THEME ───────────────────────────────────────────────────
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.dataset.theme === 'dark';
+    html.dataset.theme = isDark ? 'light' : 'dark';
+    document.getElementById('theme-icon-dark').style.display = isDark ? 'none' : '';
+    document.getElementById('theme-icon-light').style.display = isDark ? '' : 'none';
+  }
+
+  // ─── MODAL ───────────────────────────────────────────────────
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  // Close modal on backdrop click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeModal(overlay.id);
+    });
+  });
+
+  // ─── TOAST ───────────────────────────────────────────────────
+  function toast(msg, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    const icons = { success: '✓', warn: '⚠', error: '✕' };
+    el.innerHTML = `<span>${icons[type] || '✓'}</span>${msg}`;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 2800);
+  }
+
+  // ─── HELPERS ─────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ─── PUBLIC API ──────────────────────────────────────────────
+  return {
+    init,
+    // Image
+    setImageTransform, flipImageH, flipImageV, updateImageFilter, resetImageAdjustments,
+    // Background
+    setBgColor1, setBgColor2, setBgGradient, setTransition, setImageHeight,
+    setGlowColor, setGlowIntensity, extractPalette,
+    // Content
+    setMediaType, updateContent,
+    // Tags
+    addTag, removeTag,
+    // Meta
+    addMetaField, removeMetaField, updateMetaField,
+    // Layers
+    addLayer, toggleLayerVisibility, toggleLayerLock, updateLayerName, updateLayerOpacity,
+    // Save/Load
+    saveJSON, loadJSON,
+    // Utils
+    toast, openModal, closeModal,
+  };
+})();
+
+// ─── UTILITY: Toggle section collapse ───────────────────────
+function toggleSection(btn) {
+  const body = btn.closest('.form-section').querySelector('.form-section-body');
+  const isCollapsed = body.classList.toggle('collapsed');
+  btn.textContent = isCollapsed ? '▸' : '▾';
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => PF.init());
+window.addEventListener('load', () => {
+  // Load Google Fonts if not already loaded
+  if (typeof document.fonts !== 'undefined') {
+    Promise.all([
+      document.fonts.load("800 20px 'Syne'"),
+      document.fonts.load("600 14px 'Space Grotesk'"),
+      document.fonts.load("400 14px 'Inter'"),
+    ]).then(() => {
+      // Fonts ready, re-render to ensure correct display
+      setTimeout(() => window.PF && PF.init && document.getElementById('poster-canvas') && (() => {
+        // trigger re-render after fonts load
+        const titleEl = document.querySelector('.p-title');
+        if (titleEl) titleEl.style.fontFamily = titleEl.style.fontFamily;
+      })(), 100);
+    });
+  }
+});
+</script>
+</body>
+</html>
