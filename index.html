@@ -9,7 +9,7 @@
 
 <style>
 /* ═══════════════════════════════════════════════════
-   DESIGN TOKENS 
+   DESIGN TOKENS
 ═══════════════════════════════════════════════════ */
 :root {
   --bg-0: #0a0a0f;
@@ -658,6 +658,127 @@ textarea.input { resize: vertical; min-height: 70px; line-height: 1.5; }
 .font-preview { font-size: 15px; margin-top: 2px; color: var(--text-2); }
 
 /* ═══════════════════════════════════════════════════
+   AUTO-IMPORT PANEL
+═══════════════════════════════════════════════════ */
+.import-panel {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-md); overflow: hidden;
+  margin-bottom: 8px;
+}
+.import-header {
+  padding: 10px 12px 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.import-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--text-3);
+  display: flex; align-items: center; gap: 6px;
+}
+.import-badge {
+  padding: 2px 7px; border-radius: 99px; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.5px; background: var(--accent-soft); color: var(--accent);
+  text-transform: uppercase;
+}
+.import-body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.import-url-row {
+  display: flex; gap: 6px; align-items: stretch;
+}
+.import-url-input {
+  flex: 1; padding: 7px 10px;
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-1);
+  font-size: 12px; font-family: inherit;
+  transition: var(--transition); outline: none;
+}
+.import-url-input:focus { border-color: var(--accent); background: var(--bg-0); }
+.import-url-input::placeholder { color: var(--text-3); font-size: 11.5px; }
+.import-btn {
+  padding: 7px 12px; border-radius: var(--radius-sm);
+  background: var(--accent); color: white; font-size: 12px; font-weight: 600;
+  border: none; cursor: pointer; transition: var(--transition); white-space: nowrap;
+  display: flex; align-items: center; gap: 5px;
+}
+.import-btn:hover { filter: brightness(1.1); }
+.import-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.import-btn.loading { pointer-events: none; }
+.import-spinner {
+  width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white; border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.import-preview-card {
+  background: var(--bg-3); border: 1px solid var(--border-hover);
+  border-radius: var(--radius-md); padding: 12px; display: none;
+  flex-direction: column; gap: 8px;
+}
+.import-preview-card.visible { display: flex; }
+.import-preview-header { display: flex; gap: 10px; align-items: flex-start; }
+.import-preview-thumb {
+  width: 48px; height: 68px; border-radius: 6px; object-fit: cover;
+  background: var(--bg-4); flex-shrink: 0; display: block;
+}
+.import-preview-thumb-placeholder {
+  width: 48px; height: 68px; border-radius: 6px;
+  background: var(--bg-4); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.import-preview-info { flex: 1; min-width: 0; }
+.import-preview-name {
+  font-size: 13px; font-weight: 700; color: var(--text-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.import-preview-meta {
+  font-size: 11px; color: var(--text-2); margin-top: 3px; line-height: 1.5;
+}
+.import-preview-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.import-preview-tag {
+  padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 600;
+  background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(124,106,247,0.25);
+}
+.import-field-checks {
+  display: flex; flex-direction: column; gap: 4px;
+  border-top: 1px solid var(--border); padding-top: 8px;
+}
+.import-field-check {
+  display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-2);
+}
+.import-field-check input { accent-color: var(--accent); width: 13px; height: 13px; cursor: pointer; }
+.import-apply-btn {
+  padding: 8px; background: var(--accent); color: white;
+  border-radius: var(--radius-sm); font-size: 12.5px; font-weight: 600;
+  border: none; cursor: pointer; transition: var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 4px;
+}
+.import-apply-btn:hover { filter: brightness(1.1); box-shadow: 0 0 16px var(--accent-glow); }
+.import-tips {
+  font-size: 10.5px; color: var(--text-3); line-height: 1.6;
+}
+.import-tips b { color: var(--text-2); }
+
+/* Anime search mode */
+.import-search-row { display: flex; gap: 6px; }
+.import-results-list {
+  display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;
+}
+.import-result-item {
+  display: flex; gap: 8px; align-items: center; padding: 6px 8px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg-2); cursor: pointer; transition: var(--transition);
+}
+.import-result-item:hover { border-color: var(--accent); background: var(--accent-soft); }
+.import-result-thumb {
+  width: 30px; height: 42px; border-radius: 4px; object-fit: cover; flex-shrink: 0;
+}
+.import-result-info { flex: 1; min-width: 0; }
+.import-result-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.import-result-sub { font-size: 10px; color: var(--text-2); margin-top: 1px; }
+.import-result-score { font-size: 11px; font-weight: 700; color: #f59e0b; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════
    KEYBOARD SHORTCUT HINT
 ═══════════════════════════════════════════════════ */
 .kbd {
@@ -1033,6 +1154,109 @@ textarea.input { resize: vertical; min-height: 70px; line-height: 1.5; }
           </div>
         </div>
       </div>
+
+      <!-- ═══ AUTO-IMPORT PANEL ═══ -->
+      <div class="import-panel">
+        <div class="import-header">
+          <div class="import-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13,2 13,9 20,9"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9,15 12,18 15,15"/></svg>
+            Auto-Import
+            <span class="import-badge">NEW</span>
+          </div>
+        </div>
+        <div class="import-body">
+
+          <!-- TAB SWITCHER -->
+          <div style="display:flex; gap:4px; background:var(--bg-3); padding:3px; border-radius:var(--radius-sm);">
+            <button id="import-tab-anime" onclick="PF.switchImportTab('anime')" style="flex:1; padding:5px 6px; font-size:11px; font-weight:600; border-radius:5px; background:var(--accent); color:white; border:none; cursor:pointer; transition:var(--transition);">
+              🎌 Anime / Manga
+            </button>
+            <button id="import-tab-roblox" onclick="PF.switchImportTab('roblox')" style="flex:1; padding:5px 6px; font-size:11px; font-weight:600; border-radius:5px; background:transparent; color:var(--text-2); border:none; cursor:pointer; transition:var(--transition);">
+              🎮 Roblox
+            </button>
+          </div>
+
+          <!-- ANIME/MANGA IMPORT -->
+          <div id="import-anime-panel">
+            <div class="import-tips">
+              Recherche via <b>MyAnimeList (Jikan API)</b> — titre en français ou japonais accepté.
+            </div>
+            <div class="import-search-row">
+              <input class="import-url-input" id="anime-search-input" placeholder="Ex: One Piece, Naruto, Bleach…" onkeydown="if(event.key==='Enter') PF.searchAnime()">
+              <button class="import-btn" id="anime-search-btn" onclick="PF.searchAnime()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Search
+              </button>
+            </div>
+            <div class="import-results-list" id="anime-results-list" style="display:none;"></div>
+
+            <!-- Anime preview card -->
+            <div class="import-preview-card" id="anime-preview-card">
+              <div class="import-preview-header">
+                <div id="anime-thumb-wrap"></div>
+                <div class="import-preview-info">
+                  <div class="import-preview-name" id="anime-preview-name">—</div>
+                  <div class="import-preview-meta" id="anime-preview-meta">—</div>
+                  <div class="import-preview-tags" id="anime-preview-tags"></div>
+                </div>
+              </div>
+              <div class="import-field-checks" id="anime-field-checks">
+                <div class="import-field-check"><input type="checkbox" id="ic-title" checked><label for="ic-title">Titre</label></div>
+                <div class="import-field-check"><input type="checkbox" id="ic-subtitle" checked><label for="ic-subtitle">Sous-titre (studio · année · type)</label></div>
+                <div class="import-field-check"><input type="checkbox" id="ic-synopsis" checked><label for="ic-synopsis">Synopsis</label></div>
+                <div class="import-field-check"><input type="checkbox" id="ic-tags" checked><label for="ic-tags">Tags / Genres</label></div>
+                <div class="import-field-check"><input type="checkbox" id="ic-rating" checked><label for="ic-rating">Note (score)</label></div>
+                <div class="import-field-check"><input type="checkbox" id="ic-meta" checked><label for="ic-meta">Infos détaillées</label></div>
+                <div class="import-field-check"><input type="checkbox" id="ic-image" checked><label for="ic-image">Image de couverture (via proxy)</label></div>
+              </div>
+              <button class="import-apply-btn" onclick="PF.applyAnimeData()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                Appliquer au poster
+              </button>
+            </div>
+          </div>
+
+          <!-- ROBLOX IMPORT -->
+          <div id="import-roblox-panel" style="display:none;">
+            <div class="import-tips">
+              Colle un lien <b>roblox.com/games/…</b> ou entre directement un <b>Game ID</b>.
+            </div>
+            <div class="import-url-row">
+              <input class="import-url-input" id="roblox-url-input" placeholder="https://www.roblox.com/games/104767169570582/…" onkeydown="if(event.key==='Enter') PF.fetchRoblox()">
+              <button class="import-btn" id="roblox-fetch-btn" onclick="PF.fetchRoblox()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13,2 13,9 20,9"/></svg>
+                Fetch
+              </button>
+            </div>
+
+            <!-- Roblox preview card -->
+            <div class="import-preview-card" id="roblox-preview-card">
+              <div class="import-preview-header">
+                <div id="roblox-thumb-wrap"></div>
+                <div class="import-preview-info">
+                  <div class="import-preview-name" id="roblox-preview-name">—</div>
+                  <div class="import-preview-meta" id="roblox-preview-meta">—</div>
+                  <div class="import-preview-tags" id="roblox-preview-tags"></div>
+                </div>
+              </div>
+              <div class="import-field-checks" id="roblox-field-checks">
+                <div class="import-field-check"><input type="checkbox" id="rc-title" checked><label for="rc-title">Titre du jeu</label></div>
+                <div class="import-field-check"><input type="checkbox" id="rc-subtitle" checked><label for="rc-subtitle">Sous-titre (créateur · genre)</label></div>
+                <div class="import-field-check"><input type="checkbox" id="rc-synopsis" checked><label for="rc-synopsis">Description</label></div>
+                <div class="import-field-check"><input type="checkbox" id="rc-tags" checked><label for="rc-tags">Tags</label></div>
+                <div class="import-field-check"><input type="checkbox" id="rc-meta" checked><label for="rc-meta">Statistiques (visites, likes…)</label></div>
+                <div class="import-field-check"><input type="checkbox" id="rc-image" checked><label for="rc-image">Thumbnail du jeu</label></div>
+              </div>
+              <button class="import-apply-btn" onclick="PF.applyRobloxData()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                Appliquer au poster
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- ═══ END AUTO-IMPORT ═══ -->
 
       <!-- Title -->
       <div class="form-section">
@@ -2936,6 +3160,476 @@ const PF = (() => {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  //  AUTO-IMPORT ENGINE
+  // ═══════════════════════════════════════════════════════════════
+
+  // Stored fetched data for apply step
+  let _animeData = null;
+  let _robloxData = null;
+
+  // ─── TAB SWITCHER ────────────────────────────────────────────
+  function switchImportTab(tab) {
+    const isAnime = tab === 'anime';
+    document.getElementById('import-anime-panel').style.display = isAnime ? '' : 'none';
+    document.getElementById('import-roblox-panel').style.display = isAnime ? 'none' : '';
+    const btnA = document.getElementById('import-tab-anime');
+    const btnR = document.getElementById('import-tab-roblox');
+    btnA.style.background = isAnime ? 'var(--accent)' : 'transparent';
+    btnA.style.color = isAnime ? 'white' : 'var(--text-2)';
+    btnR.style.background = !isAnime ? 'var(--accent)' : 'transparent';
+    btnR.style.color = !isAnime ? 'white' : 'var(--text-2)';
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  ANIME — Jikan API v4 (MyAnimeList unofficial, no key needed)
+  // ═══════════════════════════════════════════════════════════════
+
+  async function searchAnime() {
+    const q = document.getElementById('anime-search-input').value.trim();
+    if (!q) { toast('Entre un titre à rechercher', 'warn'); return; }
+
+    const btn = document.getElementById('anime-search-btn');
+    btn.innerHTML = '<div class="import-spinner"></div>';
+    btn.disabled = true;
+    document.getElementById('anime-results-list').style.display = 'none';
+    document.getElementById('anime-preview-card').classList.remove('visible');
+    _animeData = null;
+
+    try {
+      const url = `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(q)}&limit=8&sfw=false`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('API error ' + res.status);
+      const json = await res.json();
+      renderAnimeResults(json.data || []);
+    } catch (err) {
+      toast('Erreur API Jikan — réessaie dans quelques secondes', 'error');
+      console.error(err);
+    } finally {
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
+      btn.disabled = false;
+    }
+  }
+
+  function renderAnimeResults(items) {
+    const list = document.getElementById('anime-results-list');
+    list.innerHTML = '';
+    if (!items.length) {
+      list.innerHTML = '<div style="padding:10px; color:var(--text-3); font-size:12px; text-align:center;">Aucun résultat trouvé</div>';
+      list.style.display = 'block';
+      return;
+    }
+    list.style.display = 'flex';
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'import-result-item';
+      const type = item.type || 'Anime';
+      const year = item.year || (item.aired && item.aired.from ? new Date(item.aired.from).getFullYear() : '?');
+      const score = item.score ? item.score.toFixed(1) : 'N/A';
+      const thumb = item.images?.jpg?.image_url || '';
+      el.innerHTML = `
+        ${thumb ? `<img class="import-result-thumb" src="${thumb}" onerror="this.style.display='none'" loading="lazy">` : '<div class="import-result-thumb" style="background:var(--bg-4);display:flex;align-items:center;justify-content:center;font-size:14px;">🎌</div>'}
+        <div class="import-result-info">
+          <div class="import-result-name">${escHtml(item.title || '—')}</div>
+          <div class="import-result-sub">${type} · ${year} · ${item.studios?.[0]?.name || 'Studio ?'}</div>
+        </div>
+        <div class="import-result-score">★ ${score}</div>
+      `;
+      el.addEventListener('click', () => selectAnimeResult(item));
+      list.appendChild(el);
+    });
+  }
+
+  async function selectAnimeResult(item) {
+    document.getElementById('anime-results-list').style.display = 'none';
+
+    // Fetch full details for the selected anime
+    const btn = document.getElementById('anime-search-btn');
+    btn.innerHTML = '<div class="import-spinner"></div>';
+    btn.disabled = true;
+
+    try {
+      // Get full details + characters if needed
+      const [detailRes] = await Promise.all([
+        fetch(`https://api.jikan.moe/v4/anime/${item.mal_id}/full`)
+      ]);
+      const detail = await detailRes.json();
+      const d = detail.data || item;
+      _animeData = d;
+      renderAnimePreview(d);
+    } catch (err) {
+      // Fallback to basic item data
+      _animeData = item;
+      renderAnimePreview(item);
+      toast('Détails complets indisponibles, infos de base utilisées', 'warn');
+    } finally {
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
+      btn.disabled = false;
+    }
+  }
+
+  function renderAnimePreview(d) {
+    const card = document.getElementById('anime-preview-card');
+    card.classList.add('visible');
+
+    // Thumbnail
+    const thumbWrap = document.getElementById('anime-thumb-wrap');
+    const imgUrl = d.images?.jpg?.large_image_url || d.images?.jpg?.image_url || '';
+    thumbWrap.innerHTML = imgUrl
+      ? `<img class="import-preview-thumb" src="${imgUrl}" onerror="this.outerHTML='<div class=\\'import-preview-thumb-placeholder\\'>🎌</div>'" loading="lazy">`
+      : '<div class="import-preview-thumb-placeholder">🎌</div>';
+
+    // Name
+    document.getElementById('anime-preview-name').textContent = d.title_english || d.title || '—';
+
+    // Meta
+    const year = d.year || (d.aired?.from ? new Date(d.aired.from).getFullYear() : '?');
+    const eps = d.episodes ? `${d.episodes} éps.` : 'En cours';
+    const status = d.status || '';
+    const studio = d.studios?.[0]?.name || d.producers?.[0]?.name || 'Studio ?';
+    document.getElementById('anime-preview-meta').innerHTML =
+      `<b>${studio}</b> · ${year} · ${eps}<br>${d.type || 'TV'} · ${status}`;
+
+    // Tags
+    const tagsEl = document.getElementById('anime-preview-tags');
+    tagsEl.innerHTML = '';
+    (d.genres || []).slice(0, 5).forEach(g => {
+      const t = document.createElement('span');
+      t.className = 'import-preview-tag';
+      t.textContent = g.name;
+      tagsEl.appendChild(t);
+    });
+  }
+
+  function applyAnimeData() {
+    if (!_animeData) { toast('Aucune donnée à appliquer', 'warn'); return; }
+    const d = _animeData;
+
+    // Switch to anime mode
+    document.getElementById('media-type').value = 'anime';
+    state.mediaType = 'anime';
+
+    if (document.getElementById('ic-title').checked) {
+      const title = d.title_english || d.title || '';
+      document.getElementById('c-title').value = title;
+      state.title = title;
+    }
+
+    if (document.getElementById('ic-subtitle').checked) {
+      const year = d.year || (d.aired?.from ? new Date(d.aired.from).getFullYear() : '');
+      const studio = d.studios?.[0]?.name || '';
+      const type = d.type || 'TV';
+      const sub = [year, studio, type].filter(Boolean).join(' · ');
+      document.getElementById('c-subtitle').value = sub;
+      state.subtitle = sub;
+    }
+
+    if (document.getElementById('ic-synopsis').checked && d.synopsis) {
+      const syn = d.synopsis.replace(/\[Written by MAL Rewrite\]/gi, '').trim();
+      document.getElementById('c-synopsis').value = syn;
+      state.synopsis = syn;
+    }
+
+    if (document.getElementById('ic-tags').checked && d.genres) {
+      state.tags = d.genres.slice(0, 6).map(g => g.name);
+      renderTagsEditor();
+    }
+
+    if (document.getElementById('ic-rating').checked && d.score) {
+      state.rating = Math.min(5, Math.round((d.score / 10) * 5 * 10) / 10);
+      document.getElementById('c-score').value = d.score.toFixed(1);
+      document.getElementById('c-score-max').value = '10';
+      state.score = d.score.toFixed(1);
+      state.scoreMax = '10';
+      updateStarsDisplay();
+    }
+
+    if (document.getElementById('ic-meta').checked) {
+      const metaItems = [];
+      if (d.title_japanese) metaItems.push({ label: 'Titre JP', value: d.title_japanese });
+      if (d.studios?.[0]?.name) metaItems.push({ label: 'Studio', value: d.studios[0].name });
+      if (d.year) metaItems.push({ label: 'Année', value: String(d.year) });
+      if (d.episodes) metaItems.push({ label: 'Épisodes', value: String(d.episodes) });
+      if (d.status) metaItems.push({ label: 'Statut', value: d.status });
+      if (d.duration) metaItems.push({ label: 'Durée / ép.', value: d.duration.replace('per ep.', '').trim() });
+      if (d.score) metaItems.push({ label: 'Score MAL', value: d.score.toFixed(2) });
+      if (d.rank) metaItems.push({ label: 'Rang MAL', value: '#' + d.rank });
+      if (d.members) metaItems.push({ label: 'Membres', value: formatNum(d.members) });
+      if (d.rating) metaItems.push({ label: 'Classification', value: d.rating });
+      if (d.source) metaItems.push({ label: 'Source', value: d.source });
+      if (d.season) metaItems.push({ label: 'Saison', value: capitalize(d.season) + (d.year ? ' ' + d.year : '') });
+      if (metaItems.length) {
+        state.metaFields = metaItems;
+        renderMetaFields();
+      }
+    }
+
+    // Cover image via proxy (allorigins or direct — MAL images don't restrict hotlinking much)
+    if (document.getElementById('ic-image').checked) {
+      const imgUrl = d.images?.jpg?.large_image_url || d.images?.jpg?.image_url || '';
+      if (imgUrl) {
+        loadImageFromUrl(imgUrl, 'Cover loaded from MyAnimeList!');
+      }
+    }
+
+    renderPoster();
+    pushHistory();
+    toast(`✓ "${d.title_english || d.title}" importé avec succès!`, 'success');
+    // Switch to Content tab to show the result
+    document.querySelector('[data-panel="content"]').click();
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  ROBLOX — Official Roblox API (no key needed, public endpoints)
+  // ═══════════════════════════════════════════════════════════════
+
+  async function fetchRoblox() {
+    const input = document.getElementById('roblox-url-input').value.trim();
+    if (!input) { toast('Entre une URL ou un Game ID Roblox', 'warn'); return; }
+
+    // Extract game ID from URL or direct ID
+    let universeId = null;
+    let placeId = null;
+
+    // Patterns: /games/PLACEID/... or /places/PLACEID or just a number
+    const urlMatch = input.match(/(?:games|places)\/(\d+)/i);
+    if (urlMatch) {
+      placeId = urlMatch[1];
+    } else if (/^\d+$/.test(input)) {
+      placeId = input;
+    } else {
+      toast('URL invalide — ex: roblox.com/games/104767169570582/…', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('roblox-fetch-btn');
+    btn.innerHTML = '<div class="import-spinner"></div>';
+    btn.disabled = true;
+    document.getElementById('roblox-preview-card').classList.remove('visible');
+    _robloxData = null;
+
+    try {
+      // Step 1: placeId → universeId
+      const univRes = await fetch(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`);
+      if (!univRes.ok) throw new Error('Place introuvable (ID invalide?)');
+      const univJson = await univRes.json();
+      universeId = univJson.universeId;
+
+      // Step 2: universeId → game details + votes + thumbnail in parallel
+      const [gameRes, votesRes, thumbRes] = await Promise.all([
+        fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`),
+        fetch(`https://games.roblox.com/v1/games/votes?universeIds=${universeId}`),
+        fetch(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${universeId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`),
+      ]);
+      const gameJson = await gameRes.json();
+      const votesJson = await votesRes.json();
+      const thumbJson = await thumbRes.json();
+
+      const game = gameJson.data?.[0];
+      const votes = votesJson.data?.[0];
+      const thumb = thumbJson.data?.[0]?.imageUrl;
+
+      if (!game) throw new Error('Jeu introuvable');
+
+      _robloxData = { game, votes, thumb, universeId, placeId };
+      renderRobloxPreview(_robloxData);
+
+    } catch (err) {
+      toast(`Erreur: ${err.message}`, 'error');
+      console.error(err);
+    } finally {
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13,2 13,9 20,9"/></svg> Fetch`;
+      btn.disabled = false;
+    }
+  }
+
+  function renderRobloxPreview(data) {
+    const { game, votes, thumb } = data;
+    const card = document.getElementById('roblox-preview-card');
+    card.classList.add('visible');
+
+    // Thumbnail
+    const thumbWrap = document.getElementById('roblox-thumb-wrap');
+    thumbWrap.innerHTML = thumb
+      ? `<img class="import-preview-thumb" src="${thumb}" onerror="this.outerHTML='<div class=\\'import-preview-thumb-placeholder\\'>🎮</div>'" loading="lazy">`
+      : '<div class="import-preview-thumb-placeholder">🎮</div>';
+
+    // Name
+    document.getElementById('roblox-preview-name').textContent = game.name || '—';
+
+    // Meta
+    const visits = game.visits ? formatNum(game.visits) : '?';
+    const playing = game.playing ? formatNum(game.playing) : '?';
+    const updated = game.updated ? new Date(game.updated).toLocaleDateString('fr-FR', { year:'numeric', month:'short' }) : '?';
+    const likes = votes?.upVotes ? formatNum(votes.upVotes) : '?';
+    document.getElementById('roblox-preview-meta').innerHTML =
+      `👁 ${visits} visites · 🟢 ${playing} joueurs<br>👍 ${likes} likes · 📅 Mis à jour ${updated}`;
+
+    // Tags
+    const tagsEl = document.getElementById('roblox-preview-tags');
+    tagsEl.innerHTML = '';
+    const tags = buildRobloxTags(game);
+    tags.forEach(t => {
+      const el = document.createElement('span');
+      el.className = 'import-preview-tag';
+      el.textContent = t;
+      tagsEl.appendChild(el);
+    });
+  }
+
+  function buildRobloxTags(game) {
+    const tags = ['Roblox'];
+    if (game.genre) tags.push(game.genre);
+    if (game.maxPlayers) tags.push(`${game.maxPlayers} joueurs max`);
+    if (game.isCopyrightProtected === false) tags.push('Free');
+    if (game.isAllGenre) tags.push('All Ages');
+    return tags.slice(0, 5);
+  }
+
+  function applyRobloxData() {
+    if (!_robloxData) { toast('Aucune donnée à appliquer', 'warn'); return; }
+    const { game, votes, thumb } = _robloxData;
+
+    // Switch to roblox mode
+    document.getElementById('media-type').value = 'roblox';
+    state.mediaType = 'roblox';
+
+    if (document.getElementById('rc-title').checked) {
+      document.getElementById('c-title').value = game.name || '';
+      state.title = game.name || '';
+    }
+
+    if (document.getElementById('rc-subtitle').checked) {
+      const creator = game.creator?.name || '';
+      const genre = game.genre || 'Roblox';
+      const sub = [creator, genre, 'Roblox'].filter(Boolean).join(' · ');
+      document.getElementById('c-subtitle').value = sub;
+      state.subtitle = sub;
+    }
+
+    if (document.getElementById('rc-synopsis').checked && game.description) {
+      const desc = game.description.trim();
+      document.getElementById('c-synopsis').value = desc;
+      state.synopsis = desc;
+    }
+
+    if (document.getElementById('rc-tags').checked) {
+      state.tags = buildRobloxTags(game);
+      renderTagsEditor();
+    }
+
+    if (document.getElementById('rc-meta').checked) {
+      const metaItems = [];
+      if (game.creator?.name) metaItems.push({ label: 'Créateur', value: game.creator.name });
+      if (game.visits) metaItems.push({ label: 'Visites', value: formatNum(game.visits) });
+      if (game.playing) metaItems.push({ label: 'En ligne', value: formatNum(game.playing) });
+      if (votes?.upVotes) metaItems.push({ label: 'Likes', value: formatNum(votes.upVotes) });
+      if (votes?.downVotes) metaItems.push({ label: 'Dislikes', value: formatNum(votes.downVotes) });
+      if (game.favoritedCount) metaItems.push({ label: 'Favoris', value: formatNum(game.favoritedCount) });
+      if (game.maxPlayers) metaItems.push({ label: 'Max joueurs', value: String(game.maxPlayers) });
+      if (game.genre) metaItems.push({ label: 'Genre', value: game.genre });
+      if (game.created) metaItems.push({ label: 'Créé le', value: new Date(game.created).toLocaleDateString('fr-FR') });
+      if (game.updated) metaItems.push({ label: 'Mis à jour', value: new Date(game.updated).toLocaleDateString('fr-FR') });
+      if (metaItems.length) {
+        state.metaFields = metaItems;
+        renderMetaFields();
+      }
+    }
+
+    // Roblox scores: compute like ratio
+    if (votes?.upVotes && votes?.downVotes) {
+      const total = votes.upVotes + votes.downVotes;
+      const ratio = total > 0 ? (votes.upVotes / total * 10).toFixed(1) : '?';
+      state.score = ratio;
+      state.scoreMax = '10';
+      state.rating = Math.min(5, parseFloat(ratio) / 2);
+      document.getElementById('c-score').value = ratio;
+      document.getElementById('c-score-max').value = '10';
+      updateStarsDisplay();
+    }
+
+    // Apply Roblox template theme
+    setBgColor1('#001022');
+    setBgColor2('#002050');
+    setGlowColor('#00aaff');
+    document.getElementById('subtitle-color').value = '#00aaff';
+    state.subtitleColor = '#00aaff';
+
+    // Thumbnail
+    if (document.getElementById('rc-image').checked && thumb) {
+      loadImageFromUrl(thumb, 'Thumbnail Roblox chargée!');
+    }
+
+    renderPoster();
+    pushHistory();
+    toast(`✓ "${game.name}" importé depuis Roblox!`, 'success');
+  }
+
+  // ─── LOAD IMAGE FROM URL (via proxy to avoid CORS) ───────────
+  function loadImageFromUrl(url, successMsg) {
+    // Try direct first; MAL images and Roblox CDN are usually open
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      // Convert to data URL via canvas to avoid taint
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const cx = c.getContext('2d');
+      cx.drawImage(img, 0, 0);
+      try {
+        const dataUrl = c.toDataURL('image/jpeg', 0.95);
+        state.imageSrc = dataUrl;
+        imageEl = img;
+        renderPoster();
+        toast(successMsg || 'Image chargée!', 'success');
+        pushHistory();
+      } catch (e) {
+        // Canvas tainted — try allorigins proxy
+        loadImageViaProxy(url, successMsg);
+      }
+    };
+    img.onerror = () => loadImageViaProxy(url, successMsg);
+    img.src = url;
+  }
+
+  function loadImageViaProxy(url, successMsg) {
+    // Use allorigins.win as a CORS proxy
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const cx = c.getContext('2d');
+      cx.drawImage(img, 0, 0);
+      try {
+        state.imageSrc = c.toDataURL('image/jpeg', 0.95);
+        imageEl = img;
+        renderPoster();
+        toast(successMsg || 'Image chargée via proxy!', 'success');
+        pushHistory();
+      } catch (e) {
+        toast('Impossible de charger l\'image automatiquement — upload manuel requis', 'warn');
+      }
+    };
+    img.onerror = () => toast('Image inaccessible — upload ton image manuellement dans l\'onglet Image', 'warn');
+    img.src = proxyUrl;
+  }
+
+  // ─── HELPERS ─────────────────────────────────────────────────
+  function formatNum(n) {
+    if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + 'B';
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+    return String(n);
+  }
+
+  function capitalize(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+  }
+
   // ─── PUBLIC API ──────────────────────────────────────────────
   return {
     init,
@@ -2954,6 +3648,8 @@ const PF = (() => {
     addLayer, toggleLayerVisibility, toggleLayerLock, updateLayerName, updateLayerOpacity,
     // Save/Load
     saveJSON, loadJSON,
+    // Import
+    switchImportTab, searchAnime, applyAnimeData, fetchRoblox, applyRobloxData,
     // Utils
     toast, openModal, closeModal,
   };
